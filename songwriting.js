@@ -165,18 +165,44 @@ function addChord(chordName) {
     closeChordFinder();
 }
 
-function openChordFinder(event) {
+// Chord row band on top of each lyric line, and the y offset used to hit-test the lyric text under it.
+const CHORD_ROW_BAND_HEIGHT = 24;
+const LYRIC_TEXT_HIT_OFFSET = 28;
+
+function getChordInsertionPoint(event) {
     const sheet = document.getElementById('lyrics-sheet');
-    if (event.target.closest('.chord-label')) return;
+    if (event.target.closest?.('.chord-label')) return null;
+    const line = event.target.closest?.('div, p');
+    if (!line || line === sheet || !sheet.contains(line)) return null;
 
-    const line = event.target.closest('div, p') || sheet.lastElementChild || sheet;
     const lineBounds = line.getBoundingClientRect();
-    if (!line.textContent.trim() || event.clientY > lineBounds.top + 24) return;
+    if (!line.textContent.trim() || event.clientY > lineBounds.top + CHORD_ROW_BAND_HEIGHT) return null;
 
-    const caretRange = document.caretRangeFromPoint(event.clientX, lineBounds.top + 28);
-    if (!caretRange || !sheet.contains(caretRange.commonAncestorContainer)) return;
+    const caretRange = document.caretRangeFromPoint(event.clientX, lineBounds.top + LYRIC_TEXT_HIT_OFFSET);
+    if (!caretRange || !sheet.contains(caretRange.commonAncestorContainer)) return null;
+    return { lineBounds, caretRange };
+}
 
-    pendingChordRange = caretRange.cloneRange();
+// Box of the lyric character the chord anchors to, i.e. the character right after the caret.
+function getChordAnchorBounds(caretRange) {
+    const { startContainer, startOffset } = caretRange;
+    if (startContainer.nodeType !== Node.TEXT_NODE) return null;
+    const textLength = startContainer.textContent.length;
+    if (!textLength) return null;
+
+    const anchorRange = document.createRange();
+    const end = startOffset < textLength ? startOffset + 1 : startOffset;
+    anchorRange.setStart(startContainer, end - 1);
+    anchorRange.setEnd(startContainer, end);
+    const bounds = anchorRange.getBoundingClientRect();
+    return bounds.width ? bounds : null;
+}
+
+function openChordFinder(event) {
+    const insertion = getChordInsertionPoint(event);
+    if (!insertion) return;
+
+    pendingChordRange = insertion.caretRange.cloneRange();
     const modal = document.getElementById('chord-finder-modal');
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
@@ -189,15 +215,16 @@ function openChordFinder(event) {
 function updateSnapIndicator(event) {
     const sheet = document.getElementById('lyrics-sheet');
     const indicator = sheet.querySelector('.chord-snap-indicator');
-    const line = event.target.closest('div, p');
-    if (!line || event.clientY > line.getBoundingClientRect().top + 24) {
+    const insertion = getChordInsertionPoint(event);
+    const anchorBounds = insertion && getChordAnchorBounds(insertion.caretRange);
+    if (!anchorBounds) {
         indicator.classList.remove('visible');
         return;
     }
     const sheetBounds = sheet.getBoundingClientRect();
-    const lineBounds = line.getBoundingClientRect();
-    indicator.style.left = `${event.clientX - sheetBounds.left}px`;
-    indicator.style.top = `${lineBounds.top - sheetBounds.top + 3}px`;
+    indicator.style.left = `${anchorBounds.left - sheetBounds.left}px`;
+    indicator.style.width = `${anchorBounds.width}px`;
+    indicator.style.top = `${insertion.lineBounds.top - sheetBounds.top + 3}px`;
     indicator.classList.add('visible');
 }
 
@@ -255,10 +282,40 @@ function removeChord(event) {
     renderReference();
 }
 
+// Each lyric line needs a block wrapper to get its chord row, so wrap text typed straight into the sheet.
+function wrapStrayLyricLines() {
+    const sheet = document.getElementById('lyrics-sheet');
+    const selection = window.getSelection();
+    const hasCaret = selection.rangeCount && sheet.contains(selection.getRangeAt(0).commonAncestorContainer);
+    const caretRange = hasCaret ? selection.getRangeAt(0).cloneRange() : null;
+    let line = null;
+
+    [...sheet.childNodes].forEach(node => {
+        const isStray = node.nodeType === Node.TEXT_NODE
+            ? Boolean(node.textContent.trim())
+            : node.nodeType === Node.ELEMENT_NODE && !['BR', 'DIV', 'P'].includes(node.tagName) && !node.classList.contains('chord-snap-indicator');
+        if (!isStray) {
+            line = null;
+            return;
+        }
+        if (!line) {
+            line = document.createElement('div');
+            node.parentNode.insertBefore(line, node);
+        }
+        line.appendChild(node);
+    });
+
+    if (caretRange) {
+        selection.removeAllRanges();
+        selection.addRange(caretRange);
+    }
+}
+
 function syncSheet() {
     const sheet = document.getElementById('lyrics-sheet');
     const indicator = sheet.querySelector('.chord-snap-indicator');
     indicator?.remove();
+    wrapStrayLyricLines();
     song.lyricsHtml = normalizeLyricsHtml(sheet.innerHTML);
     sheet.insertAdjacentHTML('beforeend', '<span class="chord-snap-indicator" contenteditable="false"></span>');
     saveSong();
@@ -442,6 +499,7 @@ function renderSong() {
     document.getElementById('song-bpm').value = song.bpm;
     song.lyricsHtml = normalizeLyricsHtml(song.lyricsHtml);
     document.getElementById('lyrics-sheet').innerHTML = song.lyricsHtml;
+    wrapStrayLyricLines();
     document.getElementById('lyrics-sheet').insertAdjacentHTML('beforeend', '<span class="chord-snap-indicator" contenteditable="false"></span>');
     renderReference();
     renderNoteReference();

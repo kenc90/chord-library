@@ -509,12 +509,13 @@ body {
 .chord-snap-indicator {
     position: absolute;
     display: none;
-    width: 1px;
+    min-width: 2px;
     height: 1.2rem;
-    border-left: 2px dashed #72d2e2;
-    box-shadow: 0 0 7px rgba(114, 210, 226, 0.75);
+    border: 2px dashed #72d2e2;
+    border-radius: 3px;
+    background: rgba(114, 210, 226, 0.18);
+    box-shadow: 0 0 7px rgba(114, 210, 226, 0.5);
     pointer-events: none;
-    transform: translateX(-50%);
 }
 
 .chord-snap-indicator.visible {
@@ -832,4 +833,5 @@ body {
     .no-chords-found {
         color: #a0a0a0;
         font-size: 0.9rem;
+    }
 }
