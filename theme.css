@@ -1,6 +1,7 @@
 /*
  * Theme tokens shared by every page. Dark is the default palette; the light
- * palette is applied through [data-theme="light"] on <html> (see i18n.js).
+ * palette is applied through [data-theme="light"] on <html> (set by the inline
+ * head script on every page, then kept in sync by i18n.js).
  *
  * Usage notes:
  * - --ink-rgb holds the "subtle ink" channels so the many rgba(...) surface,

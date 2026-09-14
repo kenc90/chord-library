@@ -44,11 +44,9 @@ function getLanguage() {
     return localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'en';
 }
 
-// Falls back to the system palette until the user picks a theme in the toggle button.
+// Dark is the default palette; light mode only applies once the user switches to it.
 function getTheme() {
-    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-    if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme;
-    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    return localStorage.getItem(THEME_STORAGE_KEY) === 'light' ? 'light' : 'dark';
 }
 
 function applyTheme() {
@@ -230,8 +228,4 @@ document.addEventListener('DOMContentLoaded', () => {
     createLanguageSelector();
     createMobileNav();
     applyTheme();
-});
-
-window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
-    if (!localStorage.getItem(THEME_STORAGE_KEY)) applyTheme();
 });

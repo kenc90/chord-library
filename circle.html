@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Circle of Fifths - Guitar Chords Library</title>
     <script>
-        // Applied before the first paint so light-mode users never see the dark palette flash.
-        document.documentElement.dataset.theme = localStorage.getItem('guitar-chords-library-theme')
-            || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        // Restored before the first paint so a saved light theme never flashes dark; dark is the default.
+        document.documentElement.dataset.theme = localStorage.getItem('guitar-chords-library-theme') === 'light' ? 'light' : 'dark';
     </script>
     <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="style.css">
