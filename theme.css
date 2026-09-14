@@ -45,10 +45,12 @@
     color-scheme: light;
 
     /* Backgrounds and surfaces */
-    --bg-base: #fff;
+    /* The page is a soft blue-grey so the white panels, cards and sheets stay
+       readable instead of melting into a full-white background. */
+    --bg-base: #dbe2ef;
     --bg-panel: #fff;
-    --bg-deep: #e6eefb;
-    --bg-tint: rgba(15, 52, 96, 0.07);
+    --bg-deep: #c3d3e8;
+    --bg-tint: rgba(15, 52, 96, 0.09);
     --bg-float: rgba(255, 255, 255, 0.82);
     --ink-rgb: 22, 33, 62;
 
