@@ -522,6 +522,11 @@ body {
     display: block;
 }
 
+/* Toggled while the pointer is over a chord row spot where a chord can be inserted. */
+.lyrics-sheet.chord-row-hover {
+    cursor: pointer;
+}
+
 .chord-finder-modal {
     position: fixed;
     inset: 0;

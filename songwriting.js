@@ -217,6 +217,7 @@ function updateSnapIndicator(event) {
     const indicator = sheet.querySelector('.chord-snap-indicator');
     const insertion = getChordInsertionPoint(event);
     const anchorBounds = insertion && getChordAnchorBounds(insertion.caretRange);
+    sheet.classList.toggle('chord-row-hover', Boolean(anchorBounds));
     if (!anchorBounds) {
         indicator.classList.remove('visible');
         return;
@@ -541,7 +542,10 @@ document.getElementById('lyrics-sheet').addEventListener('click', event => {
 });
 document.getElementById('lyrics-sheet').addEventListener('mousedown', openChordFinder);
 document.getElementById('lyrics-sheet').addEventListener('pointermove', updateSnapIndicator);
-document.getElementById('lyrics-sheet').addEventListener('pointerleave', () => document.querySelector('.chord-snap-indicator')?.classList.remove('visible'));
+document.getElementById('lyrics-sheet').addEventListener('pointerleave', () => {
+    document.getElementById('lyrics-sheet').classList.remove('chord-row-hover');
+    document.querySelector('.chord-snap-indicator')?.classList.remove('visible');
+});
 document.getElementById('lyrics-sheet').addEventListener('dragenter', event => {
     event.preventDefault();
     if (event.dataTransfer.types.includes('Files')) {
