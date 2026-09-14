@@ -9,9 +9,9 @@
 
 .nav-link {
     padding: 0.6rem 1.4rem;
-    border: 2px solid #f5a623;
+    border: 2px solid var(--accent);
     background: transparent;
-    color: #f5a623;
+    color: var(--accent);
     border-radius: 25px;
     text-decoration: none;
     font-weight: 600;
@@ -24,8 +24,8 @@
 }
 
 .nav-link.active {
-    background: #f5a623;
-    color: #1a1a2e;
+    background: var(--accent);
+    color: var(--text-on-amber);
 }
 
 /* Identifier Container */
@@ -37,8 +37,8 @@
 
 /* Fretboard */
 .fretboard-wrapper {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--ink-rgb), 0.05);
+    border: 1px solid rgba(var(--ink-rgb), 0.1);
     border-radius: 16px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -64,7 +64,7 @@
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    color: #f5a623;
+    color: var(--accent);
     font-size: 0.9rem;
 }
 
@@ -124,32 +124,32 @@
 }
 
 .fret-cell.nut-cell {
-    border-left: 4px solid #ccc;
+    border-left: 4px solid var(--line-nut);
 }
 
 .fret-marker {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #e94560;
+    background: var(--danger);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.7rem;
     font-weight: bold;
-    color: #fff;
+    color: var(--text-on-accent);
     z-index: 10;
     box-shadow: 0 2px 8px rgba(233, 69, 96, 0.4);
 }
 
 .fret-marker.preview-marker {
-    background: #4caf50;
+    background: var(--success);
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
     animation: pulse 0.8s ease-in-out infinite alternate;
 }
 
 .fret-marker.pinned-marker {
-    background: #4caf50;
+    background: var(--success);
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5);
 }
 
@@ -180,7 +180,7 @@
     top: 50%;
     width: 12px;
     height: 12px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--ink-rgb), 0.1);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     z-index: 0;
@@ -196,9 +196,9 @@
 
 .control-btn {
     padding: 0.8rem 2rem;
-    border: 2px solid #e94560;
+    border: 2px solid var(--danger);
     background: transparent;
-    color: #e94560;
+    color: var(--danger);
     border-radius: 25px;
     cursor: pointer;
     font-size: 1rem;
@@ -225,8 +225,8 @@
 }
 
 .control-btn.primary {
-    background: #e94560;
-    color: #fff;
+    background: var(--danger);
+    color: var(--text-on-accent);
 }
 
 .control-btn.primary:hover {
@@ -235,8 +235,8 @@
 }
 
 #cancel-btn {
-    border-color: #4caf50;
-    color: #4caf50;
+    border-color: var(--success);
+    color: var(--success);
 }
 
 #cancel-btn:hover {
@@ -253,15 +253,15 @@
 
 .selected-notes,
 .chord-result {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--ink-rgb), 0.05);
+    border: 1px solid rgba(var(--ink-rgb), 0.1);
     border-radius: 16px;
     padding: 1.5rem;
 }
 
 .selected-notes h3,
 .chord-result h3 {
-    color: #f5a623;
+    color: var(--accent);
     margin-bottom: 1rem;
     font-size: 1rem;
 }
@@ -275,8 +275,8 @@
 
 .note-chip {
     background: rgba(233, 69, 96, 0.2);
-    border: 1px solid #e94560;
-    color: #fff;
+    border: 1px solid var(--danger);
+    color: var(--text-bright);
     padding: 0.4rem 0.8rem;
     border-radius: 20px;
     font-size: 0.9rem;
@@ -286,12 +286,12 @@
 .chord-name-result {
     font-size: 2.5rem;
     font-weight: bold;
-    color: #e94560;
+    color: var(--danger);
     margin-bottom: 0.5rem;
 }
 
 .chord-details {
-    color: #a0a0a0;
+    color: var(--text-muted);
     font-size: 0.95rem;
     line-height: 1.6;
 }
@@ -312,22 +312,22 @@
 
 .possible-chord-item:hover {
     background: rgba(245, 166, 35, 0.2);
-    border-color: #f5a623;
+    border-color: var(--accent);
 }
 
 .possible-chord-item.active-suggestion {
     background: rgba(76, 175, 80, 0.2);
-    border-color: #4caf50;
+    border-color: var(--success);
     box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
 
 .possible-chord-item .chord-label {
     font-weight: bold;
-    color: #f5a623;
+    color: var(--accent);
 }
 
 .possible-chord-item.active-suggestion .chord-label {
-    color: #4caf50;
+    color: var(--success);
 }
 
 .possible-chord-item .chord-notes {
@@ -338,20 +338,20 @@
 
 /* Instructions */
 .instructions {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(var(--ink-rgb), 0.03);
+    border: 1px solid rgba(var(--ink-rgb), 0.08);
     border-radius: 16px;
     padding: 1.5rem;
 }
 
 .instructions h3 {
-    color: #f5a623;
+    color: var(--accent);
     margin-bottom: 0.8rem;
 }
 
 .instructions ul {
     padding-left: 1.5rem;
-    color: #a0a0a0;
+    color: var(--text-muted);
     line-height: 1.8;
 }
 

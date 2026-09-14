@@ -1,0 +1,73 @@
+/*
+ * Theme tokens shared by every page. Dark is the default palette; the light
+ * palette is applied through [data-theme="light"] on <html> (see i18n.js).
+ *
+ * Usage notes:
+ * - --ink-rgb holds the "subtle ink" channels so the many rgba(...) surface,
+ *   border and grid colours keep their exact alpha in both themes.
+ * - Accent tokens are darkened in light mode because they are frequently used
+ *   as text or hairline borders on a light background.
+ */
+:root {
+    color-scheme: dark;
+
+    /* Backgrounds and surfaces */
+    --bg-base: #1a1a2e;
+    --bg-panel: #16213e;
+    --bg-deep: #0f3460;
+    --bg-tint: rgba(15, 52, 96, 0.35);
+    --bg-float: rgba(26, 26, 46, 0.72);
+    --ink-rgb: 255, 255, 255;
+
+    /* Text */
+    --text-body: #e0e0e0;
+    --text-bright: #fff;
+    --text-heading: #f3f4f6;
+    --text-muted: #a0a0a0;
+    --text-soft: #c0c0c0;
+    --text-steel: #a0c4d8;
+    --text-on-accent: #fff;
+    --text-on-amber: #1a1a2e;
+
+    /* Accents */
+    --accent: #f5a623;
+    --danger: #e94560;
+    --info: #72d2e2;
+    --teal: #4cafc0;
+    --success: #4caf50;
+
+    /* Diagram lines */
+    --line-nut: #ccc;
+}
+
+[data-theme='light'] {
+    color-scheme: light;
+
+    /* Backgrounds and surfaces */
+    --bg-base: #fff;
+    --bg-panel: #fff;
+    --bg-deep: #e6eefb;
+    --bg-tint: rgba(15, 52, 96, 0.07);
+    --bg-float: rgba(255, 255, 255, 0.82);
+    --ink-rgb: 22, 33, 62;
+
+    /* Text */
+    --text-body: #2f3749;
+    --text-bright: #16213e;
+    --text-heading: #16213e;
+    --text-muted: #5b6472;
+    --text-soft: #4b5563;
+    --text-steel: #3a5f7c;
+    --text-on-accent: #fff;
+    --text-on-amber: #1a1a2e;
+
+    /* Accents */
+    --accent: #b3760a;
+    --danger: #c92a4a;
+    --info: #177f96;
+    --teal: #2b7f92;
+    --success: #2e7d32;
+
+    /* Diagram lines */
+    --line-nut: #7a8494;
+}

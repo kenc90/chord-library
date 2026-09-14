@@ -6,15 +6,24 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: linear-gradient(135deg, var(--bg-base) 0%, var(--bg-panel) 50%, var(--bg-deep) 100%);
     min-height: 100vh;
-    color: #e0e0e0;
+    color: var(--text-body);
 }
 
-.language-button {
+/* Top-right window controls: theme toggle first, then the language toggle. */
+.top-controls {
     position: absolute;
     top: 1rem;
     right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    z-index: 1000;
+}
+
+.theme-button,
+.language-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,15 +32,28 @@ body {
     padding: 0;
     border: none;
     background: transparent;
-    color: #f5a623;
+    color: var(--accent);
     cursor: pointer;
     transition: color 0.2s, transform 0.2s;
-    z-index: 1000;
 }
 
+.theme-button:hover,
 .language-button:hover {
-    color: #e94560;
+    color: var(--danger);
     transform: scale(1.1);
+}
+
+/* Only show the icon for the theme the button will switch to. */
+.theme-button .icon-moon {
+    display: none;
+}
+
+[data-theme='light'] .theme-button .icon-sun {
+    display: none;
+}
+
+[data-theme='light'] .theme-button .icon-moon {
+    display: block;
 }
 
 .language-modal {
@@ -61,14 +83,14 @@ body {
     padding: 1.5rem;
     border: 1px solid rgba(245, 166, 35, 0.4);
     border-radius: 12px;
-    background: #1a1a2e;
+    background: var(--bg-base);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     text-align: center;
 }
 
 .language-modal-title {
     font-size: 1.1rem;
-    color: #f5a623;
+    color: var(--accent);
     margin-bottom: 1rem;
 }
 
@@ -84,7 +106,7 @@ body {
     border: 1px solid rgba(245, 166, 35, 0.3);
     border-radius: 8px;
     background: transparent;
-    color: #e0e0e0;
+    color: var(--text-body);
     font: inherit;
     font-size: 0.95rem;
     cursor: pointer;
@@ -98,8 +120,8 @@ body {
 
 .language-option.selected {
     background: rgba(245, 166, 35, 0.2);
-    border-color: #f5a623;
-    color: #f5a623;
+    border-color: var(--accent);
+    color: var(--accent);
     font-weight: 600;
 }
 
@@ -108,7 +130,7 @@ body {
     border: none;
     border-radius: 8px;
     background: rgba(233, 69, 96, 0.2);
-    color: #e94560;
+    color: var(--danger);
     font: inherit;
     font-size: 0.85rem;
     cursor: pointer;
@@ -119,9 +141,13 @@ body {
 }
 
 @media (max-width: 480px) {
-    .language-button {
+    .top-controls {
         top: 0.6rem;
         right: 0.6rem;
+    }
+
+    .theme-button,
+    .language-button {
         width: 2.2rem;
         height: 2.2rem;
     }
@@ -134,7 +160,7 @@ header {
 
 header h1 {
     font-size: 2.5rem;
-    background: linear-gradient(90deg, #e94560, #f5a623);
+    background: linear-gradient(90deg, var(--danger), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -142,7 +168,7 @@ header h1 {
 }
 
 .subtitle {
-    color: #a0a0a0;
+    color: var(--text-muted);
     font-size: 1.1rem;
 }
 
@@ -160,9 +186,9 @@ header h1 {
     align-items: center;
     justify-content: center;
     padding: 0.6rem 1.4rem;
-    border: 2px solid #f5a623;
+    border: 2px solid var(--accent);
     background: transparent;
-    color: #f5a623;
+    color: var(--accent);
     border-radius: 25px;
     text-decoration: none;
     font-weight: 600;
@@ -177,8 +203,8 @@ header h1 {
 }
 
 .nav-link.active {
-    background: #f5a623;
-    color: #1a1a2e;
+    background: var(--accent);
+    color: var(--text-on-amber);
 }
 
 /* Mobile Navigation */
@@ -195,7 +221,7 @@ header h1 {
     border: 1px solid rgba(245, 166, 35, 0.4);
     border-radius: 6px;
     background: rgba(245, 166, 35, 0.12);
-    color: #f5a623;
+    color: var(--accent);
     cursor: pointer;
     z-index: 1000;
 }
@@ -231,14 +257,14 @@ header h1 {
     padding: 1.5rem;
     border: 1px solid rgba(245, 166, 35, 0.4);
     border-radius: 12px;
-    background: #1a1a2e;
+    background: var(--bg-base);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     text-align: center;
 }
 
 .mobile-nav-title {
     font-size: 1.1rem;
-    color: #f5a623;
+    color: var(--accent);
     margin-bottom: 1rem;
 }
 
@@ -254,7 +280,7 @@ header h1 {
     border: 1px solid rgba(245, 166, 35, 0.3);
     border-radius: 8px;
     background: transparent;
-    color: #e0e0e0;
+    color: var(--text-body);
     font: inherit;
     font-size: 1rem;
     text-decoration: none;
@@ -268,8 +294,8 @@ header h1 {
 }
 
 .mobile-nav-link.active {
-    background: #f5a623;
-    color: #1a1a2e;
+    background: var(--accent);
+    color: var(--text-on-amber);
     font-weight: 600;
 }
 
@@ -279,7 +305,7 @@ header h1 {
     border: none;
     border-radius: 8px;
     background: rgba(233, 69, 96, 0.2);
-    color: #e94560;
+    color: var(--danger);
     font: inherit;
     font-size: 0.85rem;
     cursor: pointer;
@@ -324,9 +350,9 @@ header h1 {
     align-items: center;
     justify-content: center;
     padding: 0.6rem 1.4rem;
-    border: 2px solid #e94560;
+    border: 2px solid var(--danger);
     background: transparent;
-    color: #e94560;
+    color: var(--danger);
     border-radius: 25px;
     cursor: pointer;
     font-size: 0.95rem;
@@ -341,19 +367,19 @@ header h1 {
 }
 
 .category-btn.active {
-    background: #e94560;
-    color: #fff;
+    background: var(--danger);
+    color: var(--text-on-accent);
     box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
 }
 
 .category-btn.utility-category {
-    border-color: #4cafc0;
-    color: #4cafc0;
+    border-color: var(--teal);
+    color: var(--teal);
 }
 
 .category-btn.utility-category:hover,
 .category-btn.utility-category.active {
-    background: #4cafc0;
+    background: var(--teal);
     color: #102a3a;
     box-shadow: 0 4px 15px rgba(76, 175, 192, 0.35);
 }
@@ -371,7 +397,7 @@ header h1 {
 /* Chord Section Header (All view) */
 .chord-section-header {
     grid-column: 1 / -1;
-    color: #e94560;
+    color: var(--danger);
     font-size: 1.5rem;
     font-weight: 700;
     padding: 1rem 0 0.25rem;
@@ -387,8 +413,8 @@ header h1 {
 /* Chord Card */
 .chord-card {
     position: relative;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--ink-rgb), 0.05);
+    border: 1px solid rgba(var(--ink-rgb), 0.1);
     border-radius: 16px;
     padding: 1.2rem 1rem;
     text-align: center;
@@ -398,7 +424,7 @@ header h1 {
 
 .chord-card:hover {
     transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--ink-rgb), 0.1);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     border-color: rgba(233, 69, 96, 0.4);
 }
@@ -419,10 +445,10 @@ header h1 {
     right: 0.55rem;
     width: 1.65rem;
     height: 1.65rem;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(var(--ink-rgb), 0.18);
     border-radius: 50%;
-    background: rgba(26, 26, 46, 0.72);
-    color: #a0a0a0;
+    background: var(--bg-float);
+    color: var(--text-muted);
     cursor: pointer;
     opacity: 0.65;
     transition: all 0.2s ease;
@@ -444,8 +470,8 @@ header h1 {
 .pin-chord-btn:hover,
 .pin-chord-btn:focus-visible,
 .pin-chord-btn.pinned {
-    border-color: #f5a623;
-    color: #f5a623;
+    border-color: var(--accent);
+    color: var(--accent);
     opacity: 1;
 }
 
@@ -456,13 +482,13 @@ header h1 {
 .empty-pinned-chords {
     grid-column: 1 / -1;
     padding: 3rem 1rem;
-    color: #a0a0a0;
+    color: var(--text-muted);
     text-align: center;
 }
 
 .voicings-hint {
     font-size: 0.75rem;
-    color: #f5a623;
+    color: var(--accent);
     margin-top: 0.5rem;
     font-weight: 500;
 }
@@ -487,8 +513,8 @@ header h1 {
 }
 
 .modal-content {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, var(--bg-base) 0%, var(--bg-panel) 100%);
+    border: 1px solid rgba(var(--ink-rgb), 0.1);
     border-radius: 20px;
     max-width: 900px;
     width: 100%;
@@ -502,20 +528,20 @@ header h1 {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(var(--ink-rgb), 0.1);
 }
 
 .modal-header h2 {
     font-size: 1.5rem;
-    color: #fff;
+    color: var(--text-bright);
 }
 
 .modal-header .note {
-    color: #e94560;
+    color: var(--danger);
 }
 
 .modal-header .suffix {
-    color: #f5a623;
+    color: var(--accent);
 }
 
 .modal-close {
@@ -530,7 +556,7 @@ header h1 {
 }
 
 .modal-close:hover {
-    color: #e94560;
+    color: var(--danger);
 }
 
 .modal-body {
@@ -542,8 +568,8 @@ header h1 {
 }
 
 .voicing-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--ink-rgb), 0.05);
+    border: 1px solid rgba(var(--ink-rgb), 0.1);
     border-radius: 12px;
     padding: 1rem;
     text-align: center;
@@ -551,7 +577,7 @@ header h1 {
 
 .voicing-label {
     font-size: 0.85rem;
-    color: #f5a623;
+    color: var(--accent);
     margin-bottom: 0.8rem;
     font-weight: 500;
 }
@@ -559,16 +585,16 @@ header h1 {
 .chord-name {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-bright);
     margin-bottom: 0.8rem;
 }
 
 .chord-name .note {
-    color: #e94560;
+    color: var(--danger);
 }
 
 .chord-name .suffix {
-    color: #f5a623;
+    color: var(--accent);
     font-size: 0.9rem;
 }
 
@@ -595,18 +621,18 @@ header h1 {
 }
 
 .chord-diagram .nut {
-    stroke: #ccc;
+    stroke: var(--line-nut);
     stroke-width: 3;
 }
 
 .chord-diagram .finger {
-    fill: #e94560;
+    fill: var(--danger);
     stroke: none;
 }
 
 .chord-diagram .open-string {
     fill: none;
-    stroke: #4caf50;
+    stroke: var(--success);
     stroke-width: 2;
 }
 
@@ -616,7 +642,7 @@ header h1 {
 }
 
 .chord-diagram .barre {
-    fill: #e94560;
+    fill: var(--danger);
     opacity: 0.9;
 }
 
@@ -690,8 +716,8 @@ footer {
     right: 2rem;
     width: 48px;
     height: 48px;
-    background: #e94560;
-    color: #fff;
+    background: var(--danger);
+    color: var(--text-on-accent);
     border: none;
     border-radius: 50%;
     cursor: pointer;
