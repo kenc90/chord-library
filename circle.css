@@ -603,12 +603,12 @@
 
 .chord-diagram .open-string {
     fill: none;
-    stroke: #0f0;
+    stroke: var(--diagram-open);
     stroke-width: 2;
 }
 
 .chord-diagram .muted-string {
-    stroke: #f00;
+    stroke: var(--diagram-muted);
     stroke-width: 2;
 }
 

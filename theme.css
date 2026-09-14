@@ -37,8 +37,10 @@
     --teal: #4cafc0;
     --success: #4caf50;
 
-    /* Diagram lines */
+    /* Diagram lines and string markers */
     --line-nut: #ccc;
+    --diagram-open: #0f0;
+    --diagram-muted: #f00;
 }
 
 [data-theme='light'] {
@@ -71,6 +73,9 @@
     --teal: #2b7f92;
     --success: #2e7d32;
 
-    /* Diagram lines */
+    /* Diagram lines and string markers */
+    /* Neon green and pure red disappear on a light page, so both markers darken. */
     --line-nut: #7a8494;
+    --diagram-open: #147a3c;
+    --diagram-muted: #d21f1f;
 }
