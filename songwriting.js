@@ -3,6 +3,7 @@ const SONG_STORAGE_KEY = 'guitar-chords-library-song-draft';
 let song = { title: '', keys: [], bpm: '', lyricsHtml: '', referenceShapes: {} };
 let savedSelection = null;
 let pendingChordRange = null;
+let editingAnnotation = null;
 let pendingKeys = [];
 
 const SONG_KEYS = ['C', 'Cm', 'C#', 'C#m', 'D', 'Dm', 'Eb', 'Ebm', 'E', 'Em', 'F', 'Fm', 'F#', 'F#m', 'G', 'Gm', 'Ab', 'Abm', 'A', 'Am', 'Bb', 'Bbm', 'B', 'Bm'];
@@ -149,13 +150,28 @@ function escapeHtml(value) {
     return value.replace(/&/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 }
 
+function chordLabelHtml(chordName) {
+    return `<button class="chord-label" type="button" contenteditable="false" data-chord="${escapeHtml(chordName)}" title="${t('updateChord')}">${escapeHtml(chordName)}</button>`;
+}
+
 function addChord(chordName) {
     const sheet = document.getElementById('lyrics-sheet');
-    if (!chordName || !pendingChordRange || !sheet.contains(pendingChordRange.commonAncestorContainer)) return;
+    if (!chordName) return;
+
+    if (editingAnnotation) {
+        if (!sheet.contains(editingAnnotation)) return;
+        editingAnnotation.innerHTML = chordLabelHtml(chordName);
+        syncSheet();
+        renderReference();
+        closeChordFinder();
+        return;
+    }
+
+    if (!pendingChordRange || !sheet.contains(pendingChordRange.commonAncestorContainer)) return;
 
     const annotation = document.createElement('span');
     annotation.className = 'chord-annotation';
-    annotation.innerHTML = `<button class="chord-label" type="button" contenteditable="false" data-chord="${escapeHtml(chordName)}" title="${t('removeChord')}">${escapeHtml(chordName)}</button>`;
+    annotation.innerHTML = chordLabelHtml(chordName);
     pendingChordRange.insertNode(annotation);
     pendingChordRange.setStartAfter(annotation);
     pendingChordRange.collapse(true);
@@ -199,17 +215,38 @@ function getChordAnchorBounds(caretRange) {
 }
 
 function openChordFinder(event) {
+    const label = event.target.closest?.('.chord-label');
+    if (label) {
+        event.preventDefault();
+        pendingChordRange = null;
+        editingAnnotation = label.closest('.chord-annotation') || label;
+        openChordFinderModal();
+        return;
+    }
+
     const insertion = getChordInsertionPoint(event);
     if (!insertion) return;
 
     pendingChordRange = insertion.caretRange.cloneRange();
+    editingAnnotation = null;
+    openChordFinderModal();
+}
+
+function openChordFinderModal() {
     const modal = document.getElementById('chord-finder-modal');
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
     const search = document.getElementById('chord-finder-search');
     search.value = '';
+    renderChordFinderMode();
     renderChordChoices();
     search.focus();
+}
+
+function renderChordFinderMode() {
+    const isEditing = Boolean(editingAnnotation);
+    document.getElementById('chord-finder-title').textContent = t(isEditing ? 'updateChord' : 'chooseChord');
+    document.getElementById('chord-finder-footer').hidden = !isEditing;
 }
 
 function updateSnapIndicator(event) {
@@ -269,10 +306,10 @@ function closeChordFinder() {
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     pendingChordRange = null;
+    editingAnnotation = null;
 }
 
-function removeChord(event) {
-    const annotation = event.target.closest('.chord-annotation');
+function removeChord(annotation) {
     if (!annotation) return;
     const fragment = document.createDocumentFragment();
     [...annotation.childNodes].forEach(node => {
@@ -537,9 +574,6 @@ document.getElementById('lyrics-sheet').addEventListener('input', () => {
 document.getElementById('lyrics-sheet').addEventListener('mouseup', rememberSelection);
 document.getElementById('lyrics-sheet').addEventListener('keyup', rememberSelection);
 document.getElementById('lyrics-sheet').addEventListener('paste', pastePlainText);
-document.getElementById('lyrics-sheet').addEventListener('click', event => {
-    if (event.target.classList.contains('chord-label')) removeChord(event);
-});
 document.getElementById('lyrics-sheet').addEventListener('mousedown', openChordFinder);
 document.getElementById('lyrics-sheet').addEventListener('pointermove', updateSnapIndicator);
 document.getElementById('lyrics-sheet').addEventListener('pointerleave', () => {
@@ -575,6 +609,11 @@ document.getElementById('lyrics-sheet').addEventListener('drop', event => {
 });
 document.getElementById('chord-finder-search').addEventListener('input', renderChordChoices);
 document.getElementById('close-chord-finder').addEventListener('click', closeChordFinder);
+document.getElementById('remove-chord-btn').addEventListener('click', () => {
+    const annotation = editingAnnotation;
+    closeChordFinder();
+    removeChord(annotation);
+});
 document.getElementById('chord-finder-modal').addEventListener('click', event => {
     if (event.target.id === 'chord-finder-modal') closeChordFinder();
 });
@@ -602,7 +641,10 @@ document.getElementById('close-confirm').addEventListener('click', closeConfirmM
 document.getElementById('confirm-modal').addEventListener('click', event => {
     if (event.target.id === 'confirm-modal') closeConfirmModal();
 });
-document.addEventListener('languagechange', renderSong);
+document.addEventListener('languagechange', () => {
+    renderSong();
+    renderChordFinderMode();
+});
 
 loadSong();
 renderSong();
