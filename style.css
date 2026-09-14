@@ -387,7 +387,10 @@ header h1 {
 /* Chords Grid */
 .chords-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    /* minmax(0, 1fr) lets every column shrink with the viewport: a plain 1fr
+       column can never go below its content width, which pushed the page wider
+       than the window between the breakpoints. */
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 1.5rem;
     padding: 1rem 2rem 3rem;
     max-width: 1100px;
@@ -413,6 +416,7 @@ header h1 {
 /* Chord Card */
 .chord-card {
     position: relative;
+    min-width: 0;
     background: rgba(var(--ink-rgb), 0.05);
     border: 1px solid rgba(var(--ink-rgb), 0.1);
     border-radius: 16px;
@@ -600,8 +604,10 @@ header h1 {
 
 /* SVG Chord Diagram */
 .chord-diagram {
-    width: 120px;
-    height: 150px;
+    /* Scales down inside narrow cards instead of forcing a 120px minimum. */
+    width: min(120px, 100%);
+    height: auto;
+    aspect-ratio: 4 / 5;
     margin: 0 auto;
 }
 
@@ -678,7 +684,7 @@ footer {
 /* Responsive */
 @media (max-width: 1024px) {
     .chords-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
@@ -688,7 +694,7 @@ footer {
     }
 
     .chords-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 1rem;
         padding: 1rem;
     }
@@ -705,7 +711,7 @@ footer {
 
 @media (max-width: 480px) {
     .chords-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
