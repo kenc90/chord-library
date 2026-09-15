@@ -1,6 +1,6 @@
 // Circle of Fifths - Interactive music theory tool
 
-const NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+// NOTES and CHORDS are provided by app.js, which is loaded before this file on this page.
 const NOTES_DISPLAY = ['C', 'C#/Db', 'D', 'Eb/D#', 'E', 'F', 'F#/Gb', 'G', 'Ab/G#', 'A', 'Bb/A#', 'B'];
 
 // Circle of fifths order (clockwise from C): C, G, D, A, E, B, F#, Db, Ab, Eb, Bb, F
@@ -96,50 +96,17 @@ const KEY_SONGS = {
     ],
 };
 
-// Chord shape lookup for modal display (common open/barre shapes)
-const CHORD_SHAPES = {
-    'C':    { frets: [-1, 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0] },
-    'D':    { frets: [-1, -1, 0, 2, 3, 2], fingers: [0, 0, 0, 1, 3, 2] },
-    'E':    { frets: [0, 2, 2, 1, 0, 0], fingers: [0, 2, 3, 1, 0, 0] },
-    'F':    { frets: [1, 3, 3, 2, 1, 1], fingers: [1, 3, 4, 2, 1, 1], barre: { fret: 1, from: 6, to: 1 } },
-    'G':    { frets: [3, 2, 0, 0, 0, 3], fingers: [2, 1, 0, 0, 0, 3] },
-    'A':    { frets: [-1, 0, 2, 2, 2, 0], fingers: [0, 0, 1, 2, 3, 0] },
-    'B':    { frets: [-1, 2, 4, 4, 4, 2], fingers: [0, 1, 2, 3, 4, 1], baseFret: 1, barre: { fret: 2, from: 5, to: 1 } },
-    'Bb':   { frets: [-1, 1, 3, 3, 3, 1], fingers: [0, 1, 2, 3, 4, 1], barre: { fret: 1, from: 5, to: 1 } },
-    'Eb':   { frets: [-1, -1, 1, 3, 4, 3], fingers: [0, 0, 1, 2, 4, 3] },
-    'Ab':   { frets: [4, 3, 1, 1, 1, 4], fingers: [3, 2, 1, 1, 1, 4], barre: { fret: 1, from: 4, to: 2 } },
-    'C#':   { frets: [-1, 4, 3, 1, 2, 1], fingers: [0, 4, 3, 1, 2, 1], barre: { fret: 1, from: 3, to: 1 } },
-    'F#':   { frets: [2, 4, 4, 3, 2, 2], fingers: [1, 3, 4, 2, 1, 1], barre: { fret: 2, from: 6, to: 1 } },
-    'Am':   { frets: [-1, 0, 2, 2, 1, 0], fingers: [0, 0, 2, 3, 1, 0] },
-    'Em':   { frets: [0, 2, 2, 0, 0, 0], fingers: [0, 2, 3, 0, 0, 0] },
-    'Dm':   { frets: [-1, -1, 0, 2, 3, 1], fingers: [0, 0, 0, 2, 3, 1] },
-    'Bm':   { frets: [-1, 2, 4, 4, 3, 2], fingers: [0, 1, 3, 4, 2, 1], barre: { fret: 2, from: 5, to: 1 } },
-    'Cm':   { frets: [-1, 3, 5, 5, 4, 3], fingers: [0, 1, 3, 4, 2, 1], barre: { fret: 3, from: 5, to: 1 } },
-    'Fm':   { frets: [1, 3, 3, 1, 1, 1], fingers: [1, 3, 4, 1, 1, 1], barre: { fret: 1, from: 6, to: 1 } },
-    'Gm':   { frets: [3, 5, 5, 3, 3, 3], fingers: [1, 3, 4, 1, 1, 1], barre: { fret: 3, from: 6, to: 1 } },
-    'Ebm':  { frets: [-1, -1, 1, 3, 4, 2], fingers: [0, 0, 1, 3, 4, 2] },
-    'Abm':  { frets: [4, 6, 6, 4, 4, 4], fingers: [1, 3, 4, 1, 1, 1], barre: { fret: 4, from: 6, to: 1 } },
-    'Bbm':  { frets: [-1, 1, 3, 3, 2, 1], fingers: [0, 1, 3, 4, 2, 1], barre: { fret: 1, from: 5, to: 1 } },
-    'C#m':  { frets: [-1, 4, 6, 6, 5, 4], fingers: [0, 1, 3, 4, 2, 1], barre: { fret: 4, from: 5, to: 1 } },
-    'F#m':  { frets: [2, 4, 4, 2, 2, 2], fingers: [1, 3, 4, 1, 1, 1], barre: { fret: 2, from: 6, to: 1 } },
-    'Adim': { frets: [-1, 0, 1, 2, 1, -1], fingers: [0, 0, 1, 3, 2, 0] },
-    'Bdim': { frets: [-1, 2, 3, 4, 3, -1], fingers: [0, 1, 2, 4, 3, 0] },
-    'Edim': { frets: [0, 1, 2, 0, 2, 0], fingers: [0, 1, 2, 0, 3, 0] },
-    'F#dim':{ frets: [2, 3, 4, 2, 4, 2], fingers: [1, 2, 3, 1, 4, 1], barre: { fret: 2, from: 6, to: 1 } },
-    'C#dim':{ frets: [-1, -1, 1, 2, 4, 2], fingers: [0, 0, 1, 2, 4, 3] },
-    'G#dim':{ frets: [4, 5, 6, 4, 6, 4], fingers: [1, 2, 3, 1, 4, 1], barre: { fret: 4, from: 6, to: 1 } },
-    'Abdim':{ frets: [-1, -1, 1, 2, 1, 2], fingers: [0, 0, 1, 2, 1, 3] },
-    'Ddim': { frets: [-1, -1, 0, 1, 3, 1], fingers: [0, 0, 0, 1, 3, 2] },
-    'Ebdim':{ frets: [-1, -1, 1, 2, 0, 2], fingers: [0, 0, 1, 2, 0, 3] },
-    'Gdim': { frets: [3, 4, 5, 3, 5, 3], fingers: [1, 2, 3, 1, 4, 1], barre: { fret: 3, from: 6, to: 1 } },
-    'Fdim': { frets: [1, 2, 3, 1, 3, 1], fingers: [1, 2, 3, 1, 4, 1], barre: { fret: 1, from: 6, to: 1 } },
-    'Bbdim':{ frets: [-1, 1, 2, 3, 2, -1], fingers: [0, 1, 2, 4, 3, 0] },
-};
+// Chord shapes are sourced from the shared chord-library data (CHORDS in app.js,
+// loaded before this file) so every chord here matches the library exactly and
+// no shape goes missing (e.g. Cdim) or drifts out of sync.
+const CHORD_SHAPES = Object.fromEntries(
+    Object.values(CHORDS).flat().map(chord => [chord.name, chord])
+);
 
 // Render a chord diagram SVG (for modal)
 function renderChordShape(chord, label) {
-    const width = 120, height = 150;
-    const padding = { top: 25, bottom: 10, left: 20, right: 10 };
+    const width = 120, height = 170;
+    const padding = { top: 25, bottom: 26, left: 20, right: 10 };
     const numStrings = 6, numFrets = 5;
     const fretboardWidth = width - padding.left - padding.right;
     const fretboardHeight = height - padding.top - padding.bottom;
@@ -211,6 +178,16 @@ function renderChordShape(chord, label) {
                 svg += `<text class="finger-text" x="${x}" y="${y}">${chord.fingers[i]}</text>`;
             }
         }
+    }
+    // Mark the sounding note at the bottom of each played string.
+    const openPitches = [4, 9, 2, 7, 11, 4]; // low E, A, D, G, B, high E
+    const noteLabelY = padding.top + fretboardHeight + 16;
+    for (let i = 0; i < numStrings; i++) {
+        const fret = frets[i];
+        if (fret < 0) continue; // muted strings sound no note
+        const x = padding.left + i * stringSpacing;
+        const pc = (openPitches[i] + fret) % 12;
+        svg += `<text class="string-note" x="${x}" y="${noteLabelY}">${NOTES[pc]}</text>`;
     }
     svg += '</svg>';
     return svg;
