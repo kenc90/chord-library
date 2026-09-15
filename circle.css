@@ -80,9 +80,21 @@
     margin-bottom: 2rem;
 }
 
+/* Circular plate: the cropped viewBox makes the graph tangent to this box, so the
+   container circle and the outer ring share the exact same radius. */
+.circle-card {
+    width: min(500px, 100%);
+    padding: 0;
+    border: 1px solid rgba(var(--ink-rgb), 0.1);
+    border-radius: 50%;
+    background: rgba(var(--ink-rgb), 0.05);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), 0 3px 10px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+
 #circle-svg {
+    display: block; /* keeps the plate perfectly round (no inline descender gap) */
     width: 100%;
-    max-width: 500px;
     height: auto;
     touch-action: none;
     user-select: none;
@@ -417,7 +429,7 @@
         font-size: 0.8rem;
     }
 
-    #circle-svg {
+    .circle-card {
         max-width: 350px;
     }
 
