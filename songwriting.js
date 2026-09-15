@@ -36,6 +36,19 @@ function chordDiagram(chordName, shapeIndex = 0) {
 // Standard tuning open-string notes (low E to high E)
 const CHORD_REFERENCE_OPEN_NOTES = ['E', 'A', 'D', 'G', 'B', 'E'];
 
+// Pitch classes of those same strings, spelled out instead of looked up in
+// NOTE_REFERENCE_NOTES because that table is declared further down the file.
+const OPEN_STRING_PITCH_CLASSES = [4, 9, 2, 7, 11, 4];
+const NOTE_LETTER_PITCH_CLASSES = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+function shapeBassPitchClass(shape) {
+    // Voicing frets are absolute fret numbers, so the sounding bass is simply the lowest
+    // string that is played at all (muted strings carry -1).
+    const index = shape.frets.findIndex(fret => fret >= 0);
+    if (index === -1) return null;
+    return (OPEN_STRING_PITCH_CLASSES[index] + shape.frets[index]) % 12;
+}
+
 function getSongScaleNotes() {
     const scaleNotes = new Set();
     song.keys.forEach(key => {
@@ -75,6 +88,105 @@ function chordNotesSvg(shape) {
 }
 
 function getChordShapes(chordName) {
+    const [parentName, bassName] = String(chordName).split('/');
+    const shapes = collectChordShapes(parentName);
+    const bassPc = bassName ? NOTE_REFERENCE_NOTES.indexOf(bassName) : -1;
+    if (bassPc === -1) return shapes;
+    const inversions = buildInversions(parentName, bassPc, shapes);
+    // The library keeps no inversions, so they get derived from the parent shapes. When even
+    // that is impossible (a suffix with no known formula), the plain chord is the least wrong
+    // diagram to show - those notes still belong to the chord.
+    return inversions.length ? inversions : shapes;
+}
+
+// Pitch classes of a chord plus the tones a voicing may not drop: the root, the note that
+// names its quality (3rd, or the sus note, or the 5th of a power chord) and, from four notes
+// up, the top note as well (7th / 6th / 9th).
+function chordToneInfo(chordName) {
+    const match = chordName.match(/^([A-G][#b]?)(.*)$/);
+    if (!match) return null;
+    const rootPc = NOTE_REFERENCE_NOTES.indexOf(match[1]);
+    const intervals = CHORD_CHOICE_INTERVALS[match[2]];
+    if (rootPc === -1 || !intervals) return null;
+    const essentialIndexes = intervals.length >= 4 ? [0, 1, intervals.length - 1] : [0, 1];
+    return {
+        pcs: new Set(intervals.map(interval => (rootPc + interval) % 12)),
+        essential: new Set(essentialIndexes.map(index => (rootPc + intervals[index]) % 12))
+    };
+}
+
+function shapePitchClasses(frets) {
+    return frets
+        .map((fret, string) => (fret < 0 ? null : (OPEN_STRING_PITCH_CLASSES[string] + fret) % 12))
+        .filter(pitchClass => pitchClass !== null);
+}
+
+// Every sounding note has to be one of the chord's own tones, or the new bass note itself -
+// C/D is spelled over a D that is not a C chord tone - and no essential tone may be missing.
+function spellsChord(frets, tones, bassPc) {
+    const pcs = new Set(shapePitchClasses(frets));
+    return [...pcs].every(pc => tones.pcs.has(pc) || pc === bassPc)
+        && [...tones.essential].every(pc => pcs.has(pc));
+}
+
+function buildInversions(chordName, bassPc, parentShapes) {
+    const tones = chordToneInfo(chordName);
+    if (!tones) return [];
+    const exact = parentShapes.filter(shape => shapeBassPitchClass(shape) === bassPc);
+    const derived = parentShapes.flatMap(shape => deriveBassVoicings(shape.frets, bassPc, tones, chordName));
+    const unique = new Map();
+    [...exact, ...derived].forEach(shape => unique.set(shape.frets.join(','), shape));
+    // Lowest position first, so the comfortable open inversion is the one shown by default.
+    return [...unique.values()].sort((a, b) => Math.max(0, ...a.frets) - Math.max(0, ...b.frets));
+}
+
+// Three ways to move a shape's bass note: reach down onto a free lower string, refret the
+// string that already carries it, or drop that string and let the next one take over the bass.
+function deriveBassVoicings(frets, bassPc, tones, chordName) {
+    const results = [];
+    const lowest = frets.findIndex(fret => fret >= 0);
+    if (lowest === -1) return results;
+    const fretFor = string => ((bassPc - OPEN_STRING_PITCH_CLASSES[string]) % 12 + 12) % 12;
+    // Playable by one hand: four fretted notes at most, all inside a single five-fret window.
+    const reachable = values => {
+        const positive = values.filter(value => value > 0);
+        return new Set(positive).size <= 4
+            && (!positive.length || Math.max(...positive) - Math.min(...positive) <= 4);
+    };
+    const accept = (string, fret) => {
+        const voicing = [...frets];
+        voicing[string] = fret;
+        if (!reachable(voicing)) return;
+        // Two notes are an interval, not a chord.
+        if (voicing.filter(value => value >= 0).length < 3) return;
+        if (spellsChord(voicing, tones, bassPc)) results.push({ name: chordName, frets: voicing, fingers: deriveFingers(voicing) });
+    };
+    for (let string = 0; string < lowest; string += 1) accept(string, fretFor(string));
+    accept(lowest, fretFor(lowest));
+    const trimmed = [...frets];
+    let index = lowest;
+    while (index !== -1) {
+        trimmed[index] = -1;
+        const next = trimmed.findIndex(value => value >= 0);
+        if (next === -1 || !reachable(trimmed) || trimmed.filter(value => value >= 0).length < 3) break;
+        if (!spellsChord(trimmed, tones, bassPc)) break;
+        if ((OPEN_STRING_PITCH_CLASSES[next] + trimmed[next]) % 12 === bassPc) {
+            const inversion = [...trimmed];
+            results.push({ name: chordName, frets: inversion, fingers: deriveFingers(inversion) });
+        }
+        index = next;
+    }
+    return results;
+}
+
+// These inversions are all simple one-fret-per-finger shapes, so the lower the fret the lower
+// the finger, and a fret two strings share is the same finger barring them.
+function deriveFingers(voicing) {
+    const distinct = [...new Set(voicing.filter(value => value > 0))].sort((a, b) => a - b);
+    return voicing.map(value => (value > 0 ? distinct.indexOf(value) + 1 : 0));
+}
+
+function collectChordShapes(chordName) {
     const primaryShape = Object.values(CHORDS).flat().find(chord => chord.name === chordName);
     const alternateShapes = CHORD_VOICINGS[chordName] || [];
     return primaryShape ? [primaryShape, ...alternateShapes.filter(shape => shape.frets.join(',') !== primaryShape.frets.join(','))] : alternateShapes;
@@ -269,6 +381,9 @@ function openChordFinderModal() {
     modal.setAttribute('aria-hidden', 'false');
     const search = document.getElementById('chord-finder-search');
     search.value = '';
+    // Every modal opens on plain chords again; a leftover bass note would silently turn the
+    // next pick into a slash chord.
+    document.getElementById('chord-finder-bass').value = '';
     renderChordFinderMode();
     renderChordChoices();
     search.focus();
@@ -297,6 +412,23 @@ function updateSnapIndicator(event) {
     indicator.classList.add('visible');
 }
 
+// Turns whatever is in the bass field into a note name from the shared table, or '' when the
+// text isn't a single pitch. Case is the user's to get wrong, so 'g' and 'f#' are fine.
+function normalizeBassNote(raw) {
+    const text = raw.trim().replace(/♯/g, '#').replace(/♭/g, 'b');
+    const match = text.match(/^([a-g])([#b]?)$/i);
+    if (!match) return '';
+    const letter = match[1].toUpperCase();
+    const typed = `${letter}${match[2]}`;
+    // Keep the spelling as typed whenever the tables already carry it, so 'bb' stays Bb
+    // rather than being renamed to its sharp-side enharmonic.
+    const spelled = NOTE_REFERENCE_NOTES.find(note => note.toUpperCase() === typed.toUpperCase());
+    if (spelled) return spelled;
+    // Spellings the table has no entry for (E#, Cb, Fb, B#) resolve to their pitch class.
+    const shift = match[2] === '#' ? 1 : match[2] === 'b' ? -1 : 0;
+    return NOTE_REFERENCE_NOTES[((NOTE_LETTER_PITCH_CLASSES[letter] + shift) % 12 + 12) % 12];
+}
+
 function renderChordChoices() {
     const query = document.getElementById('chord-finder-search').value.trim().toLowerCase();
     const notes = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -323,6 +455,16 @@ function renderChordChoices() {
             ];
     });
     const choices = CHORD_CHOICES.filter(chord => chord.toLowerCase().includes(query));
+    // Listing every slash chord is hopeless, so instead the bass field lets a note be typed in
+    // and stamps it onto whatever chord gets picked: G typed + C clicked = C/G.
+    const bassField = document.getElementById('chord-finder-bass');
+    const bass = normalizeBassNote(bassField.value);
+    const invalidBass = Boolean(bassField.value.trim()) && !bass;
+    bassField.classList.toggle('invalid', invalidBass);
+    bassField.setAttribute('aria-invalid', String(invalidBass));
+    const bassHint = document.getElementById('chord-finder-bass-hint');
+    bassHint.classList.toggle('invalid', invalidBass);
+    bassHint.textContent = t(invalidBass ? 'bassInvalid' : 'bassHint');
     // A chord still belongs with the key when all of its notes are in the scale, even when
     // it is not one of the diatonic triads - Gsus4 in C, for instance. With no key picked,
     // the scale is empty and nothing passes, so the section simply does not appear.
@@ -338,11 +480,18 @@ function renderChordChoices() {
     const related = choices.filter(chord => relatedChords.includes(chord));
     const inKeyExtras = choices.filter(chord => !relatedChords.includes(chord) && isAllNotesInKey(chord));
     const other = choices.filter(chord => !relatedChords.includes(chord) && !isAllNotesInKey(chord));
-    const buttons = chords => chords.map(chord => `<button class="chord-choice" type="button" data-chord="${chord}">${chord}</button>`).join('');
+    const slashName = chord => (bass ? `${chord}/${bass}` : chord);
+    const buttons = chords => chords.map(chord => {
+        const name = slashName(chord);
+        return `<button class="chord-choice" type="button" data-chord="${name}" title="${name}">${name}</button>`;
+    }).join('');
     const section = (title, chords, modifier) => chords.length
         ? `<section class="chord-choice-section ${modifier}"><h3>${title}</h3><div class="chord-choice-grid">${buttons(chords)}</div></section>`
         : '';
-    document.getElementById('chord-finder-results').innerHTML =
+    const results = document.getElementById('chord-finder-results');
+    // Slash names are noticeably wider, so the grid needs to give each cell more room.
+    results.classList.toggle('has-bass', Boolean(bass));
+    results.innerHTML =
         section(t('relatedChords'), related, 'related-chord-section')
         + section(t('otherRelatedChords'), inKeyExtras, 'other-related-chord-section')
         + section(t('otherChords'), other, 'other-chord-section')
@@ -666,6 +815,7 @@ document.getElementById('lyrics-sheet').addEventListener('drop', event => {
     reader.readAsText(file);
 });
 document.getElementById('chord-finder-search').addEventListener('input', renderChordChoices);
+document.getElementById('chord-finder-bass').addEventListener('input', renderChordChoices);
 document.getElementById('close-chord-finder').addEventListener('click', closeChordFinder);
 document.getElementById('remove-chord-btn').addEventListener('click', () => {
     const annotation = editingAnnotation;
@@ -715,6 +865,9 @@ document.getElementById('confirm-modal').addEventListener('click', event => {
 document.addEventListener('languagechange', () => {
     renderSong();
     renderChordFinderMode();
+    // The finder's own strings live in renderChordChoices (hint text, section titles), so an
+    // open modal has to be re-rendered rather than left half-translated.
+    if (document.getElementById('chord-finder-modal').classList.contains('active')) renderChordChoices();
     if (pickerChord) renderShapeOptions();
 });
 

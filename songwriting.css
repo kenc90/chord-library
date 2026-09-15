@@ -620,7 +620,7 @@ body {
 
 .chord-finder-search {
     width: 100%;
-    margin-bottom: 1rem;
+    margin-bottom: 0.7rem;
     border: 1px solid rgba(var(--ink-rgb), 0.2);
     border-radius: 4px;
     outline: 0;
@@ -628,6 +628,54 @@ body {
     color: var(--text-bright);
     padding: 0.65rem;
     font: inherit;
+}
+
+.chord-finder-bass {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.chord-finder-bass-label {
+    color: var(--text-body);
+    font-size: 0.85rem;
+}
+
+.chord-finder-bass-input {
+    width: 4.5rem;
+    border: 1px solid rgba(var(--ink-rgb), 0.2);
+    border-radius: 4px;
+    outline: 0;
+    background: var(--bg-base);
+    color: var(--text-bright);
+    padding: 0.35rem 0.5rem;
+    font: 700 0.9rem ui-monospace, Consolas, monospace;
+}
+
+.chord-finder-bass-input:focus {
+    border-color: var(--accent);
+}
+
+.chord-finder-bass-input.invalid,
+.chord-finder-bass-input.invalid:focus {
+    border-color: var(--danger);
+}
+
+.chord-finder-bass-hint {
+    min-height: 1rem;
+    margin-bottom: 0.9rem;
+    color: var(--text-body);
+    font-size: 0.78rem;
+}
+
+.chord-finder-bass-hint.invalid {
+    color: var(--danger);
+}
+
+/* Slash names are much wider than plain ones, so the cells need more room. */
+.chord-finder-results.has-bass .chord-choice-grid {
+    grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
 }
 
 .chord-finder-results {

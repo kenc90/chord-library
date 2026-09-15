@@ -93,6 +93,13 @@
                 <button id="close-chord-finder" class="close-finder-btn" type="button" aria-label="Close">&times;</button>
             </div>
             <input id="chord-finder-search" class="chord-finder-search" type="search" autocomplete="off" placeholder="Find a chord" data-i18n-placeholder="findChord" aria-label="Find a chord">
+            <!-- Slash chords are open-ended, so they aren't listed: pick a bass note here and it
+                 gets appended to whichever chord is clicked below. -->
+            <div class="chord-finder-bass">
+                <label class="chord-finder-bass-label" for="chord-finder-bass" data-i18n="bassNote">Bass note</label>
+                <input id="chord-finder-bass" class="chord-finder-bass-input" type="text" maxlength="2" autocomplete="off" spellcheck="false" placeholder="G" aria-describedby="chord-finder-bass-hint">
+            </div>
+            <p id="chord-finder-bass-hint" class="chord-finder-bass-hint"></p>
             <div id="chord-finder-results" class="chord-finder-results"></div>
             <div id="chord-finder-footer" class="chord-finder-footer" hidden>
                 <button id="remove-chord-btn" class="chord-remove-btn" type="button" data-i18n="removeChord">Remove chord</button>
