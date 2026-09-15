@@ -13,9 +13,11 @@ const CHORD_CHOICES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb
 function chordDiagram(chordName, shapeIndex = 0) {
     const shape = getChordShapes(chordName)[shapeIndex];
     if (!shape) return '';
+    // Keep the renderer's per-string note labels; widen/heighten the canvas so the
+    // reference diagram's own chord-note summary (chordNotesSvg) sits below them.
     const svg = renderChordDiagram(shape)
         .replace('class="chord-diagram"', 'class="chord-diagram reference-diagram"')
-        .replace('viewBox="0 0 120 150"', 'viewBox="0 0 130 162"')
+        .replace('viewBox="0 0 120 170"', 'viewBox="0 0 130 188"')
         .replace('<svg ', `<svg aria-label="${chordName} chord diagram" `);
     return svg.replace('</svg>', `${chordNotesSvg(shape)}</svg>`);
 }
@@ -56,7 +58,7 @@ function chordNotesSvg(shape) {
         const x = cursor + width / 2;
         cursor += width + gap;
         const tooltip = inScale ? '' : `<title>${t('noteNotInKey')}</title>`;
-        return `<g class="reference-diagram-note${inScale ? '' : ' out-of-scale'}"${inScale ? '' : ` data-tooltip="${t('noteNotInKey')}"`}><text x="${x}" y="154" text-anchor="middle" dominant-baseline="middle">${tooltip}${note}</text></g>`;
+        return `<g class="reference-diagram-note${inScale ? '' : ' out-of-scale'}"${inScale ? '' : ` data-tooltip="${t('noteNotInKey')}"`}><text x="${x}" y="180" text-anchor="middle" dominant-baseline="middle">${tooltip}${note}</text></g>`;
     }).join('');
     return text;
 }
