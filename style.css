@@ -649,7 +649,7 @@ header h1 {
 
 .chord-diagram .barre {
     fill: var(--danger);
-    opacity: 0.9;
+    opacity: 1;
 }
 
 .chord-diagram .finger-text {

@@ -589,8 +589,7 @@
 
 .chord-diagram .finger {
     fill: var(--danger);
-    stroke: #fff;
-    stroke-width: 1;
+    stroke: none;
 }
 
 .chord-diagram .finger-text {
@@ -614,7 +613,7 @@
 
 .chord-diagram .barre {
     fill: var(--danger);
-    opacity: 0.9;
+    opacity: 1;
 }
 
 .chord-diagram .fret-number {
