@@ -10,6 +10,17 @@ const SONG_KEYS = ['C', 'Cm', 'C#', 'C#m', 'D', 'Dm', 'Eb', 'Ebm', 'E', 'Em', 'F
 
 const CHORD_CHOICES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'].flatMap(note => [note, `${note}m`, `${note}7`, `${note}maj7`, `${note}m7`, `${note}sus4`]);
 
+// Semitones from the root for every suffix CHORD_CHOICES offers, so a chord can be tested
+// against the song key without looking up a voicing.
+const CHORD_CHOICE_INTERVALS = {
+    '': [0, 4, 7],
+    'm': [0, 3, 7],
+    '7': [0, 4, 7, 10],
+    'maj7': [0, 4, 7, 11],
+    'm7': [0, 3, 7, 10],
+    'sus4': [0, 5, 7]
+};
+
 function chordDiagram(chordName, shapeIndex = 0) {
     const shape = getChordShapes(chordName)[shapeIndex];
     if (!shape) return '';
@@ -312,12 +323,30 @@ function renderChordChoices() {
             ];
     });
     const choices = CHORD_CHOICES.filter(chord => chord.toLowerCase().includes(query));
+    // A chord still belongs with the key when all of its notes are in the scale, even when
+    // it is not one of the diatonic triads - Gsus4 in C, for instance. With no key picked,
+    // the scale is empty and nothing passes, so the section simply does not appear.
+    const keyPitchClasses = new Set([...getSongScaleNotes()].map(note => NOTE_REFERENCE_NOTES.indexOf(note)));
+    const isAllNotesInKey = chord => {
+        const match = chord.match(/^([A-G][#b]?)(.*)$/);
+        if (!match) return false;
+        const rootIndex = NOTE_REFERENCE_NOTES.indexOf(match[1]);
+        const intervals = CHORD_CHOICE_INTERVALS[match[2]];
+        if (rootIndex === -1 || !intervals) return false;
+        return intervals.every(interval => keyPitchClasses.has((rootIndex + interval) % 12));
+    };
     const related = choices.filter(chord => relatedChords.includes(chord));
-    const other = choices.filter(chord => !relatedChords.includes(chord));
+    const inKeyExtras = choices.filter(chord => !relatedChords.includes(chord) && isAllNotesInKey(chord));
+    const other = choices.filter(chord => !relatedChords.includes(chord) && !isAllNotesInKey(chord));
     const buttons = chords => chords.map(chord => `<button class="chord-choice" type="button" data-chord="${chord}">${chord}</button>`).join('');
-    const relatedSection = related.length ? `<section class="chord-choice-section related-chord-section"><h3>${t('relatedChords')}</h3><div class="chord-choice-grid">${buttons(related)}</div></section>` : '';
-    const otherSection = other.length ? `<section class="chord-choice-section other-chord-section"><h3>${t('otherChords')}</h3><div class="chord-choice-grid">${buttons(other)}</div></section>` : '';
-    document.getElementById('chord-finder-results').innerHTML = `${relatedSection}${otherSection}` || `<p class="no-chords-found">${t('noChordsFound')}</p>`;
+    const section = (title, chords, modifier) => chords.length
+        ? `<section class="chord-choice-section ${modifier}"><h3>${title}</h3><div class="chord-choice-grid">${buttons(chords)}</div></section>`
+        : '';
+    document.getElementById('chord-finder-results').innerHTML =
+        section(t('relatedChords'), related, 'related-chord-section')
+        + section(t('otherRelatedChords'), inKeyExtras, 'other-related-chord-section')
+        + section(t('otherChords'), other, 'other-chord-section')
+        || `<p class="no-chords-found">${t('noChordsFound')}</p>`;
     document.querySelectorAll('.chord-choice').forEach(button => button.addEventListener('click', () => addChord(button.dataset.chord)));
 }
 
