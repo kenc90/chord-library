@@ -761,6 +761,9 @@ document.getElementById('apply-song-keys').addEventListener('click', () => {
     song.keys = [...pendingKeys];
     saveSong();
     renderSongKeyButton();
+    // The chord diagrams tint their notes in/out of key from the same scale, so they have to
+    // be redrawn as well or they keep the previous key's red markers.
+    renderReference();
     renderNoteReference();
     closeSongKeyModal();
 });
