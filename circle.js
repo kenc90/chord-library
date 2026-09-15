@@ -169,6 +169,21 @@ function renderChordShape(chord, label) {
         const x = padding.left + i * stringSpacing;
         svg += `<line class="string" x1="${x}" y1="${padding.top}" x2="${x}" y2="${padding.top + fretboardHeight}"/>`;
     }
+    // Draw barre first so the finger numbers render on top of it instead of being hidden.
+    if (chord.barre) {
+        const barreFret = chord.barre.fret - displayOffset;
+        const fromString = chord.barre.from;
+        const toString = chord.barre.to;
+        const y = padding.top + (barreFret - 0.5) * fretSpacing;
+        const x1 = padding.left + (numStrings - fromString) * stringSpacing;
+        const x2 = padding.left + (numStrings - toString) * stringSpacing;
+        // Extend the bar by the finger-dot radius on each end so its rounded caps sit on the
+        // outer note dots, merging them into one continuous capsule.
+        const barRadius = 7;
+        const barX = Math.min(x1, x2) - barRadius;
+        const barWidth = Math.abs(x2 - x1) + barRadius * 2;
+        svg += `<rect class="barre" x="${barX}" y="${y - barRadius}" width="${barWidth}" height="${barRadius * 2}" rx="${barRadius}"/>`;
+    }
     for (let i = 0; i < numStrings; i++) {
         const fret = frets[i];
         const x = padding.left + i * stringSpacing;
@@ -182,20 +197,20 @@ function renderChordShape(chord, label) {
         } else {
             const adjustedFret = fret - displayOffset;
             const y = padding.top + (adjustedFret - 0.5) * fretSpacing;
-            svg += `<circle class="finger" cx="${x}" cy="${y}" r="7"/>`;
-            if (chord.fingers && chord.fingers[i] > 0) {
+            // Skip the dot where the barre already fills this fret, so no seam shows.
+            const stringNumber = numStrings - i;
+            const onBarre = chord.barre && fret === chord.barre.fret
+                && stringNumber >= Math.min(chord.barre.from, chord.barre.to)
+                && stringNumber <= Math.max(chord.barre.from, chord.barre.to);
+            if (!onBarre) {
+                svg += `<circle class="finger" cx="${x}" cy="${y}" r="7"/>`;
+            }
+            // On a barre only the first and last positions are marked with a finger number.
+            const isBarreEnd = onBarre && (stringNumber === chord.barre.from || stringNumber === chord.barre.to);
+            if (chord.fingers && chord.fingers[i] > 0 && (!onBarre || isBarreEnd)) {
                 svg += `<text class="finger-text" x="${x}" y="${y}">${chord.fingers[i]}</text>`;
             }
         }
-    }
-    if (chord.barre) {
-        const barreFret = chord.barre.fret - displayOffset;
-        const fromString = chord.barre.from;
-        const toString = chord.barre.to;
-        const y = padding.top + (barreFret - 0.5) * fretSpacing;
-        const x1 = padding.left + (numStrings - fromString) * stringSpacing;
-        const x2 = padding.left + (numStrings - toString) * stringSpacing;
-        svg += `<rect class="barre" x="${Math.min(x1, x2)}" y="${y - 7}" width="${Math.abs(x2 - x1)}" height="14" rx="7"/>`;
     }
     svg += '</svg>';
     return svg;
