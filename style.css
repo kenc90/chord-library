@@ -607,7 +607,7 @@ header h1 {
     /* Scales down inside narrow cards instead of forcing a 120px minimum. */
     width: min(120px, 100%);
     height: auto;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 120 / 170;
     margin: 0 auto;
 }
 
@@ -664,6 +664,13 @@ header h1 {
     fill: #888;
     font-size: 9px;
     text-anchor: start;
+}
+
+.chord-diagram .string-note {
+    fill: var(--text-soft);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
 }
 
 /* Footer */

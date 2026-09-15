@@ -521,8 +521,8 @@ const CHORD_VOICINGS = {
 // SVG Chord Diagram Renderer
 function renderChordDiagram(chord) {
     const width = 120;
-    const height = 150;
-    const padding = { top: 25, bottom: 10, left: 20, right: 10 };
+    const height = 170;
+    const padding = { top: 25, bottom: 26, left: 20, right: 10 };
     const numStrings = 6;
     const numFrets = 5;
 
@@ -624,6 +624,17 @@ function renderChordDiagram(chord) {
                 svg += `<text class="finger-text" x="${x}" y="${y}">${chord.fingers[i]}</text>`;
             }
         }
+    }
+
+    // Mark the sounding note at the bottom of each played string.
+    const openPitches = [4, 9, 2, 7, 11, 4]; // low E, A, D, G, B, high E
+    const noteLabelY = padding.top + fretboardHeight + 16;
+    for (let i = 0; i < numStrings; i++) {
+        const fret = frets[i];
+        if (fret < 0) continue; // muted strings sound no note
+        const x = padding.left + i * stringSpacing;
+        const pc = (openPitches[i] + fret) % 12;
+        svg += `<text class="string-note" x="${x}" y="${noteLabelY}">${NOTES[pc]}</text>`;
     }
 
     svg += '</svg>';
