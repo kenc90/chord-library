@@ -118,14 +118,19 @@ function renderReference() {
 }
 
 let pickerChord = null;
+let pickerReadOnly = false;
+let pickerTrigger = null;
 
-function openShapePicker(chordName) {
+function openShapePicker(chordName, readOnly = false) {
     pickerChord = chordName;
+    pickerReadOnly = readOnly;
+    pickerTrigger = document.activeElement;
     renderShapeOptions();
     document.getElementById('shape-picker-title').textContent = chordName;
     const modal = document.getElementById('shape-picker-modal');
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
+    document.getElementById('close-shape-picker').focus();
 }
 
 function closeShapePicker() {
@@ -133,13 +138,25 @@ function closeShapePicker() {
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     pickerChord = null;
+    pickerReadOnly = false;
+    if (pickerTrigger?.isConnected) pickerTrigger.focus();
+    pickerTrigger = null;
 }
 
 function renderShapeOptions() {
     const grid = document.getElementById('shape-picker-grid');
     const shapes = getChordShapes(pickerChord);
     const selectedIndex = Math.min(song.referenceShapes[pickerChord] || 0, shapes.length - 1);
-    grid.innerHTML = shapes.map((shape, index) => `<button class="shape-option${index === selectedIndex ? ' selected' : ''}" type="button" data-index="${index}" aria-pressed="${index === selectedIndex}" title="${escapeHtml(shape.label || '')}"><div class="shape-option-name">${shape.label || `${t('chordShape')} ${index + 1}`}</div>${chordDiagram(pickerChord, index)}</button>`).join('');
+    const hint = document.querySelector('#shape-picker-modal .shape-picker-hint');
+    hint.dataset.i18n = pickerReadOnly ? 'allShapes' : 'chooseShape';
+    hint.textContent = t(hint.dataset.i18n);
+    grid.innerHTML = shapes.map((shape, index) => {
+        const label = escapeHtml(shape.label || `${t('chordShape')} ${index + 1}`);
+        const content = `<div class="shape-option-name">${label}</div>${chordDiagram(pickerChord, index)}`;
+        return pickerReadOnly
+            ? `<article class="shape-preview">${content}</article>`
+            : `<button class="shape-option${index === selectedIndex ? ' selected' : ''}" type="button" data-index="${index}" aria-pressed="${index === selectedIndex}" title="${label}">${content}</button>`;
+    }).join('') || `<p class="empty-reference">${t('shapeUnavailable')}</p>`;
     grid.querySelectorAll('.shape-option').forEach(option => option.addEventListener('click', () => {
         song.referenceShapes[pickerChord] = Number(option.dataset.index);
         saveSong();
@@ -505,8 +522,11 @@ function renderNoteReference() {
             const suffix = type === 'maj' ? '' : type === 'min' ? 'm' : 'dim';
             return `${note}${suffix}`;
         });
-        return `<div class="note-key-group"><span class="note-key-name">${escapeHtml(key)}</span><div class="note-key-chips">${notes.map((note, i) => `<span class="note-chip${i === 0 ? ' root' : ''}"><span class="note-chip-note">${note}</span><span class="note-chip-chord">${chords[i]}</span></span>`).join('')}</div></div>`;
+        return `<div class="note-key-group"><span class="note-key-name">${escapeHtml(key)}</span><div class="note-key-chips">${notes.map((note, i) => `<button class="note-chip${i === 0 ? ' root' : ''}" type="button" data-chord="${chords[i]}" aria-haspopup="dialog" aria-controls="shape-picker-modal" aria-label="${chords[i]} — ${t('allShapes')}" title="${chords[i]} — ${t('allShapes')}"><span class="note-chip-note">${note}</span><span class="note-chip-chord">${chords[i]}</span></button>`).join('')}</div></div>`;
     }).join('');
+    container.querySelectorAll('.note-chip').forEach(button => {
+        button.addEventListener('click', () => openShapePicker(button.dataset.chord, true));
+    });
 }
 
 function renderSongKeyOptions() {
@@ -630,6 +650,19 @@ document.getElementById('close-shape-picker').addEventListener('click', closeSha
 document.getElementById('shape-picker-modal').addEventListener('click', event => {
     if (event.target.id === 'shape-picker-modal') closeShapePicker();
 });
+document.getElementById('shape-picker-modal').addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const controls = [...event.currentTarget.querySelectorAll('button')];
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
         closeShapePicker();
@@ -653,6 +686,7 @@ document.getElementById('confirm-modal').addEventListener('click', event => {
 document.addEventListener('languagechange', () => {
     renderSong();
     renderChordFinderMode();
+    if (pickerChord) renderShapeOptions();
 });
 
 loadSong();

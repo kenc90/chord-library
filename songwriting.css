@@ -187,6 +187,18 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 0.1rem;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.note-chip:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.2);
+}
+
+.note-chip:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .note-chip-note {
@@ -713,12 +725,17 @@ body {
     gap: 0.7rem;
 }
 
-.shape-option {
+.shape-option,
+.shape-preview {
     display: block;
     padding: 0.6rem 0.5rem 0.75rem;
     border: 1px solid rgba(var(--ink-rgb), 0.14);
     border-radius: 6px;
     background: rgba(var(--ink-rgb), 0.05);
+    text-align: center;
+}
+
+.shape-option {
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s;
 }
