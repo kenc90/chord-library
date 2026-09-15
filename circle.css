@@ -63,10 +63,14 @@
 }
 
 .mode-btn.active {
-    border-color: var(--accent);
-    background: var(--accent);
+    border-color: var(--info);
+    background: var(--info);
     color: var(--text-on-amber);
-    box-shadow: 0 2px 10px rgba(245, 166, 35, 0.4);
+    box-shadow: 0 2px 10px rgba(114, 210, 226, 0.4);
+}
+
+[data-theme='light'] .mode-btn.active {
+    color: #fff;
 }
 
 /* Circle Wrapper */
