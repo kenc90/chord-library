@@ -52,6 +52,10 @@ function displayNote(name) {
 // Standard guitar tuning (string 6 to string 1, low to high)
 const TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 
+// Open-string reference for bass-note detection (E2..E4, low string first).
+const STRING_OPEN_PITCH = [40, 45, 50, 55, 59, 64];
+const STRING_OPEN_PC = [4, 9, 2, 7, 11, 4];
+
 // Number of frets to display
 const NUM_FRETS = 15;
 
@@ -99,6 +103,21 @@ function getNoteAtPosition(stringIndex, fret) {
     const openNoteIndex = NOTES.indexOf(openNote);
     const noteIndex = (openNoteIndex + fret) % 12;
     return NOTES[noteIndex];
+}
+
+// Pitch class of the lowest sounding note among the current selection (for slash chords).
+function getBassPitchClass() {
+    let low = null;
+    let bassPc = null;
+    selectedNotes.forEach(key => {
+        const [s, f] = key.split('-').map(Number);
+        const pitch = STRING_OPEN_PITCH[s] + f;
+        if (low === null || pitch < low) {
+            low = pitch;
+            bassPc = (STRING_OPEN_PC[s] + f) % 12;
+        }
+    });
+    return bassPc; // null when nothing is selected
 }
 
 // Render the fretboard
@@ -347,7 +366,15 @@ function identifyChord() {
         const bestMatch = matches[0];
         const bestFormula = CHORD_FORMULAS[bestMatch.type];
         spellContext = { root: bestMatch.root, intervals: bestFormula.intervals, degrees: bestFormula.degrees };
-        resultDiv.textContent = bestMatch.fullName;
+
+        // Slash chord: when the lowest sounding note isn't the chord root, label Root/Bass.
+        const bassPc = getBassPitchClass();
+        const rootPc = noteToNumber(bestMatch.root);
+        let displayName = bestMatch.fullName;
+        if (bassPc !== null && bassPc !== rootPc) {
+            displayName += '/' + pcToDisplayName(bassPc);
+        }
+        resultDiv.textContent = displayName;
 
         const spelledNotes = bestFormula.intervals.map((iv, k) => spellNoteAt(bestMatch.root, bestFormula.degrees[k], iv));
         let detailsHtml = `<p>${t('notes')}: ${spelledNotes.join(', ')}</p>`;
