@@ -765,6 +765,14 @@ footer {
 }
 
 @media (max-width: 768px) {
+    /* The corner buttons are absolutely positioned over the header, and from here inwards
+       the title is wide enough to reach under them. Their band ends at 54px from the top
+       (1rem offset + 2.4rem button), so push the heading below it instead of letting the
+       two share a row. */
+    header {
+        padding-top: 4rem;
+    }
+
     header h1 {
         font-size: 1.8rem;
     }
