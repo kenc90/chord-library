@@ -38,6 +38,24 @@
         <button class="category-btn utility-category pinned-category" data-category="pinned" data-i18n="pinned">Pinned</button>
     </nav>
 
+    <!-- Declared here so the library-only zoom button shares the corner cluster that
+         i18n.js fills with the theme and language buttons. -->
+    <div class="top-controls">
+        <button id="zoom-toggle" class="zoom-button" type="button" aria-pressed="false" title="Zoom chord diagrams">
+            <svg class="zoom-icon icon-zoom-in" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+                <line x1="11" y1="8" x2="11" y2="14"/>
+                <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+            <svg class="zoom-icon icon-zoom-out" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+                <line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+        </button>
+    </div>
+
     <main id="chords-container" class="chords-grid">
         <!-- Chords will be rendered here by JavaScript -->
     </main>

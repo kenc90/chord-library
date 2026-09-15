@@ -23,7 +23,8 @@ body {
 }
 
 .theme-button,
-.language-button {
+.language-button,
+.zoom-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -38,7 +39,8 @@ body {
 }
 
 .theme-button:hover,
-.language-button:hover {
+.language-button:hover,
+.zoom-button:hover {
     color: var(--danger);
     transform: scale(1.1);
 }
@@ -53,6 +55,19 @@ body {
 }
 
 [data-theme='light'] .theme-button .icon-moon {
+    display: block;
+}
+
+/* Only show the magnifier for the size the button will switch to. */
+.zoom-button .icon-zoom-out {
+    display: none;
+}
+
+body.chord-zoom .zoom-button .icon-zoom-in {
+    display: none;
+}
+
+body.chord-zoom .zoom-button .icon-zoom-out {
     display: block;
 }
 
@@ -151,7 +166,8 @@ body {
     }
 
     .theme-button,
-    .language-button {
+    .language-button,
+    .zoom-button {
         width: 2.2rem;
         height: 2.2rem;
     }
@@ -617,7 +633,7 @@ header h1 {
 /* SVG Chord Diagram */
 .chord-diagram {
     /* Scales down inside narrow cards instead of forcing a 120px minimum. */
-    width: min(120px, 100%);
+    width: min(calc(120px * var(--chord-zoom, 1)), 100%);
     height: auto;
     aspect-ratio: 120 / 170;
     margin: 0 auto;
@@ -730,6 +746,29 @@ footer {
 
 @media (max-width: 480px) {
     .chords-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Chord diagram zoom
+   One factor drives the diagram width while the grid drops a column, so enlarged
+   diagrams get real space instead of being squeezed straight back down by the 100% cap. */
+body.chord-zoom {
+    --chord-zoom: 1.5;
+}
+
+body.chord-zoom .chords-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+    body.chord-zoom .chords-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    body.chord-zoom .chords-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

@@ -771,8 +771,38 @@ function closeVoicingsModal() {
     modal.classList.remove('active');
 }
 
+// Diagram zoom toggle
+const ZOOM_STORAGE_KEY = 'guitar-chords-library-zoom';
+
+function isDiagramZoomed() {
+    return document.body.classList.contains('chord-zoom');
+}
+
+// The icon and its label announce the size the button switches to, like the theme toggle.
+function updateZoomButton() {
+    const button = document.getElementById('zoom-toggle');
+    if (!button) return;
+    const zoomed = isDiagramZoomed();
+    const label = t(zoomed ? 'zoomOut' : 'zoomIn');
+    button.setAttribute('aria-pressed', String(zoomed));
+    button.title = label;
+    button.setAttribute('aria-label', label);
+}
+
+function setDiagramZoom(zoomed) {
+    document.body.classList.toggle('chord-zoom', zoomed);
+    localStorage.setItem(ZOOM_STORAGE_KEY, zoomed ? '1' : '0');
+    updateZoomButton();
+}
+
 // Event listeners
 if (document.getElementById('chords-container')) {
+document.getElementById('zoom-toggle')?.addEventListener('click', () => {
+    setDiagramZoom(!isDiagramZoomed());
+});
+// Restore the saved size before the first grid render so nothing reflows afterwards.
+setDiagramZoom(localStorage.getItem(ZOOM_STORAGE_KEY) === '1');
+
 document.querySelectorAll('.category-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -782,6 +812,7 @@ document.querySelectorAll('.category-btn').forEach(btn => {
 });
 
 document.addEventListener('languagechange', () => {
+    updateZoomButton();
     renderCategory(document.querySelector('.category-btn.active').dataset.category);
 });
 
