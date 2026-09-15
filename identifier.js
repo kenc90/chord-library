@@ -1,7 +1,53 @@
 // Chord Identifier - Interactive fretboard and chord detection
 
-// Chromatic scale (12 notes)
+// Chromatic scale (12 notes) - canonical pitch-class names used for lookups
 const NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+// Enharmonic spelling via a letter-based speller so a chord's notes are spelled
+// in its own key (e.g. F# major shows F# A# C# instead of F# Bb C#).
+const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+const LETTER_PCS = [0, 2, 4, 5, 7, 9, 11];
+// When set, note labels are spelled relative to this chord { root, intervals, degrees }.
+let spellContext = null;
+
+function parseNote(name) {
+    const m = name.match(/^([A-G])([#b]?)/);
+    if (!m) return null;
+    return { letter: m[1], acc: m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0 };
+}
+function accidentalToSymbol(a) {
+    if (a >= 2) return 'x';   // double sharp
+    if (a === 1) return '#';
+    if (a === 0) return '';
+    if (a === -1) return 'b';
+    return 'bb';              // double flat
+}
+// Spell the chord tone sitting `letterSteps` letters and `semitones` above `rootName`.
+function spellNoteAt(rootName, letterSteps, semitones) {
+    const r = parseNote(rootName);
+    if (!r) return NOTES[((noteToNumber(rootName) + semitones) % 12 + 12) % 12];
+    const rootLetter = LETTERS.indexOf(r.letter);
+    const rootPc = (LETTER_PCS[rootLetter] + r.acc + 12) % 12;
+    const targetPc = (rootPc + semitones) % 12;
+    const letterIdx = (rootLetter + letterSteps) % 7;
+    let diff = targetPc - LETTER_PCS[letterIdx];
+    while (diff > 3) diff -= 12;
+    while (diff < -3) diff += 12;
+    return LETTERS[letterIdx] + accidentalToSymbol(diff);
+}
+// Display name for a pitch class, respecting the current chord spelling context.
+function pcToDisplayName(pc) {
+    pc = ((pc % 12) + 12) % 12;
+    if (!spellContext) return NOTES[pc];
+    const rootPc = noteToNumber(spellContext.root);
+    const semis = ((pc - rootPc) % 12 + 12) % 12;
+    const idx = spellContext.intervals.findIndex(iv => (iv % 12) === semis);
+    if (idx === -1) return NOTES[pc];
+    return spellNoteAt(spellContext.root, spellContext.degrees[idx], semis);
+}
+function displayNote(name) {
+    return pcToDisplayName(noteToNumber(name));
+}
 
 // Standard guitar tuning (string 6 to string 1, low to high)
 const TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
@@ -12,30 +58,31 @@ const NUM_FRETS = 15;
 // Fret positions with inlay markers (dots)
 const INLAY_FRETS = [3, 5, 7, 9, 12, 15];
 
-// Chord formulas: intervals in semitones from root
+// Chord formulas: intervals in semitones from root, plus `degrees` = generic letter
+// steps from the root for each tone (used for correct enharmonic spelling).
 const CHORD_FORMULAS = {
-    'Major':     { intervals: [0, 4, 7], suffix: '' },
-    'Minor':     { intervals: [0, 3, 7], suffix: 'm' },
-    'Diminished':{ intervals: [0, 3, 6], suffix: 'dim' },
-    'Augmented': { intervals: [0, 4, 8], suffix: 'aug' },
-    'Sus2':      { intervals: [0, 2, 7], suffix: 'sus2' },
-    'Sus4':      { intervals: [0, 5, 7], suffix: 'sus4' },
-    '7th':       { intervals: [0, 4, 7, 10], suffix: '7' },
-    'Maj7':      { intervals: [0, 4, 7, 11], suffix: 'maj7' },
-    'Min7':      { intervals: [0, 3, 7, 10], suffix: 'm7' },
-    'MinMaj7':   { intervals: [0, 3, 7, 11], suffix: 'm(maj7)' },
-    'Dim7':      { intervals: [0, 3, 6, 9], suffix: 'dim7' },
-    'Half-dim7': { intervals: [0, 3, 6, 10], suffix: 'm7b5' },
-    'Aug7':      { intervals: [0, 4, 8, 10], suffix: 'aug7' },
-    'AugMaj7':   { intervals: [0, 4, 8, 11], suffix: 'aug(maj7)' },
-    '6th':       { intervals: [0, 4, 7, 9], suffix: '6' },
-    'Min6':      { intervals: [0, 3, 7, 9], suffix: 'm6' },
-    '9th':       { intervals: [0, 4, 7, 10, 14], suffix: '9' },
-    'Min9':      { intervals: [0, 3, 7, 10, 14], suffix: 'm9' },
-    'Maj9':      { intervals: [0, 4, 7, 11, 14], suffix: 'maj9' },
-    'Add9':      { intervals: [0, 4, 7, 14], suffix: 'add9' },
-    '7sus4':     { intervals: [0, 5, 7, 10], suffix: '7sus4' },
-    'Power':     { intervals: [0, 7], suffix: '5' },
+    'Major':     { intervals: [0, 4, 7], degrees: [0, 2, 4], suffix: '' },
+    'Minor':     { intervals: [0, 3, 7], degrees: [0, 2, 4], suffix: 'm' },
+    'Diminished':{ intervals: [0, 3, 6], degrees: [0, 2, 4], suffix: 'dim' },
+    'Augmented': { intervals: [0, 4, 8], degrees: [0, 2, 4], suffix: 'aug' },
+    'Sus2':      { intervals: [0, 2, 7], degrees: [0, 1, 4], suffix: 'sus2' },
+    'Sus4':      { intervals: [0, 5, 7], degrees: [0, 3, 4], suffix: 'sus4' },
+    '7th':       { intervals: [0, 4, 7, 10], degrees: [0, 2, 4, 6], suffix: '7' },
+    'Maj7':      { intervals: [0, 4, 7, 11], degrees: [0, 2, 4, 6], suffix: 'maj7' },
+    'Min7':      { intervals: [0, 3, 7, 10], degrees: [0, 2, 4, 6], suffix: 'm7' },
+    'MinMaj7':   { intervals: [0, 3, 7, 11], degrees: [0, 2, 4, 6], suffix: 'm(maj7)' },
+    'Dim7':      { intervals: [0, 3, 6, 9], degrees: [0, 2, 4, 6], suffix: 'dim7' },
+    'Half-dim7': { intervals: [0, 3, 6, 10], degrees: [0, 2, 4, 6], suffix: 'm7b5' },
+    'Aug7':      { intervals: [0, 4, 8, 10], degrees: [0, 2, 4, 6], suffix: 'aug7' },
+    'AugMaj7':   { intervals: [0, 4, 8, 11], degrees: [0, 2, 4, 6], suffix: 'aug(maj7)' },
+    '6th':       { intervals: [0, 4, 7, 9], degrees: [0, 2, 4, 5], suffix: '6' },
+    'Min6':      { intervals: [0, 3, 7, 9], degrees: [0, 2, 4, 5], suffix: 'm6' },
+    '9th':       { intervals: [0, 4, 7, 10, 14], degrees: [0, 2, 4, 6, 8], suffix: '9' },
+    'Min9':      { intervals: [0, 3, 7, 10, 14], degrees: [0, 2, 4, 6, 8], suffix: 'm9' },
+    'Maj9':      { intervals: [0, 4, 7, 11, 14], degrees: [0, 2, 4, 6, 8], suffix: 'maj9' },
+    'Add9':      { intervals: [0, 4, 7, 14], degrees: [0, 2, 4, 8], suffix: 'add9' },
+    '7sus4':     { intervals: [0, 5, 7, 10], degrees: [0, 3, 4, 6], suffix: '7sus4' },
+    'Power':     { intervals: [0, 7], degrees: [0, 4], suffix: '5' },
 };
 
 // State
@@ -152,7 +199,7 @@ function handleFretClick(e) {
         const note = notePositions[key];
         const marker = document.createElement('div');
         marker.className = 'fret-marker';
-        marker.textContent = note;
+        marker.textContent = displayNote(note);
         cell.appendChild(marker);
     }
 
@@ -172,7 +219,7 @@ function updateSelectedNotesDisplay() {
     // Get unique note names
     const uniqueNotes = new Set();
     selectedNotes.forEach(key => {
-        uniqueNotes.add(notePositions[key]);
+        uniqueNotes.add(displayNote(notePositions[key]));
     });
 
     display.innerHTML = '';
@@ -203,6 +250,9 @@ function getIntervals(notes) {
 function identifyChord() {
     const resultDiv = document.getElementById('chord-name-result');
     const detailsDiv = document.getElementById('chord-details');
+
+    // Reset spelling; re-established below when a chord is recognised.
+    spellContext = null;
 
     if (selectedNotes.size < 2) {
         resultDiv.textContent = '-';
@@ -295,9 +345,12 @@ function identifyChord() {
         matches.sort((a, b) => a.formulaIntervals.length - b.formulaIntervals.length);
 
         const bestMatch = matches[0];
+        const bestFormula = CHORD_FORMULAS[bestMatch.type];
+        spellContext = { root: bestMatch.root, intervals: bestFormula.intervals, degrees: bestFormula.degrees };
         resultDiv.textContent = bestMatch.fullName;
 
-        let detailsHtml = `<p>${t('notes')}: ${uniqueNotes.join(', ')}</p>`;
+        const spelledNotes = bestFormula.intervals.map((iv, k) => spellNoteAt(bestMatch.root, bestFormula.degrees[k], iv));
+        let detailsHtml = `<p>${t('notes')}: ${spelledNotes.join(', ')}</p>`;
 
         if (matches.length > 1) {
             detailsHtml += `<div class="possible-chords"><p><strong>${t('otherPossibilities')}</strong></p>`;
@@ -316,6 +369,18 @@ function identifyChord() {
 
         detailsDiv.innerHTML = detailsHtml;
     }
+
+    relabelMarkers();
+    updateSelectedNotesDisplay();
+}
+
+// Re-label the on-fretboard markers so they match the current chord's spelling.
+function relabelMarkers() {
+    document.querySelectorAll('.fret-cell > .fret-marker').forEach(marker => {
+        const cell = marker.parentElement;
+        const key = `${cell.dataset.string}-${cell.dataset.fret}`;
+        if (notePositions[key]) marker.textContent = displayNote(notePositions[key]);
+    });
 }
 
 // Find partial chord matches (for unknown chords)
@@ -416,6 +481,8 @@ function showChordOnFretboard(root, chordType, isPinned) {
 
     const rootNum = noteToNumber(root);
     const chordNoteNums = formula.intervals.map(i => (rootNum + i) % 12);
+    // Spell this chord's notes by its own root so markers read correctly.
+    spellContext = { root, intervals: formula.intervals, degrees: formula.degrees };
 
     // Find the best positions on the fretboard for these notes
     // Pick one position per string, preferring lower frets
@@ -433,7 +500,7 @@ function showChordOnFretboard(root, chordType, isPinned) {
                 if (cell) {
                     const marker = document.createElement('div');
                     marker.className = 'fret-marker preview-marker';
-                    marker.textContent = NOTES[noteNum];
+                    marker.textContent = pcToDisplayName(noteNum);
                     cell.appendChild(marker);
                 }
                 break; // Only one note per string
@@ -469,7 +536,7 @@ function restoreFretboard() {
         if (cell) {
             const marker = document.createElement('div');
             marker.className = 'fret-marker';
-            marker.textContent = note;
+            marker.textContent = displayNote(note);
             cell.appendChild(marker);
         }
     });
@@ -542,7 +609,7 @@ function cancelPreview() {
             if (cell) {
                 const marker = document.createElement('div');
                 marker.className = 'fret-marker';
-                marker.textContent = note;
+                marker.textContent = displayNote(note);
                 cell.appendChild(marker);
             }
         });
@@ -588,6 +655,7 @@ function clearAll() {
     isPreviewing = false;
     savedNotes = null;
     currentPreviewChord = null;
+    spellContext = null;
     selectedNotes.clear();
     document.querySelectorAll('.fret-marker').forEach(marker => marker.remove());
     updateSelectedNotesDisplay();
@@ -626,7 +694,7 @@ function shiftChord(direction) {
         if (cell) {
             const marker = document.createElement('div');
             marker.className = 'fret-marker';
-            marker.textContent = notePositions[key];
+            marker.textContent = displayNote(notePositions[key]);
             cell.appendChild(marker);
         }
     });
