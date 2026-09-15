@@ -11,6 +11,30 @@ body {
     color: var(--text-body);
 }
 
+/* Reserved even when nothing scrolls, so locking the page for a modal cannot nudge the
+   layout sideways by the scrollbar width. */
+html {
+    scrollbar-gutter: stable;
+}
+
+/* Modal scroll policy, for every dialog on the site (style.css is loaded by all pages).
+   A dialog never scrolls itself: each overlay layer is a full-viewport scroller, so the
+   dialog grows to its full content height and the only scrollbar on screen belongs to the
+   modal that is open. The page behind is frozen while any modal is shown - the markers
+   below are how each one opens: an .active class for the page dialogs, the hidden
+   attribute for the language and mobile-nav dialogs that i18n.js injects. */
+body:has(
+    .modal.active,
+    .song-key-modal.active,
+    .chord-finder-modal.active,
+    .shape-picker-modal.active,
+    .confirm-modal.active,
+    .language-modal:not([hidden]),
+    .mobile-nav-modal:not([hidden])
+) {
+    overflow: hidden;
+}
+
 /* Top-right window controls: theme toggle first, then the language toggle. */
 .top-controls {
     position: absolute;
@@ -23,8 +47,7 @@ body {
 }
 
 .theme-button,
-.language-button,
-.zoom-button {
+.language-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,8 +62,7 @@ body {
 }
 
 .theme-button:hover,
-.language-button:hover,
-.zoom-button:hover {
+.language-button:hover {
     color: var(--danger);
     transform: scale(1.1);
 }
@@ -76,8 +98,10 @@ body.chord-zoom .zoom-button .icon-zoom-out {
     inset: 0;
     z-index: 2000;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
 .language-modal[hidden] {
@@ -85,7 +109,9 @@ body.chord-zoom .zoom-button .icon-zoom-out {
 }
 
 .language-modal-backdrop {
-    position: absolute;
+    /* Fixed rather than absolute: it has to keep covering the viewport while the
+       overlay scrolls, instead of scrolling away with the dialog. */
+    position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(2px);
@@ -93,6 +119,7 @@ body.chord-zoom .zoom-button .icon-zoom-out {
 
 .language-modal-dialog {
     position: relative;
+    margin: auto;
     min-width: 260px;
     max-width: 90vw;
     padding: 1.5rem;
@@ -166,8 +193,7 @@ body.chord-zoom .zoom-button .icon-zoom-out {
     }
 
     .theme-button,
-    .language-button,
-    .zoom-button {
+    .language-button {
         width: 2.2rem;
         height: 2.2rem;
     }
@@ -259,8 +285,10 @@ header h1 {
     inset: 0;
     z-index: 2000;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
 .mobile-nav-modal[hidden] {
@@ -268,7 +296,7 @@ header h1 {
 }
 
 .mobile-nav-backdrop {
-    position: absolute;
+    position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(2px);
@@ -276,6 +304,7 @@ header h1 {
 
 .mobile-nav-dialog {
     position: relative;
+    margin: auto;
     min-width: 240px;
     max-width: 90vw;
     padding: 1.5rem;
@@ -402,13 +431,22 @@ header h1 {
 }
 
 .category-btn.utility-category:hover,
-.category-btn.utility-category.active {
+.category-btn.utility-category.active,
+/* The zoom tab tracks its own state through aria-pressed, never .active, so switching
+   category tabs cannot clear it. */
+.zoom-button[aria-pressed='true'] {
     background: var(--teal);
     color: #102a3a;
     box-shadow: 0 4px 15px rgba(76, 175, 192, 0.35);
 }
 
-[data-theme='light'] .category-btn.utility-category.active {
+/* Icon-only tab, so it doesn't need the horizontal padding the text labels need. */
+.zoom-button {
+    padding: 0.6rem 1rem;
+}
+
+[data-theme='light'] .category-btn.utility-category.active,
+[data-theme='light'] .zoom-button[aria-pressed='true'] {
     color: #fff;
 }
 
@@ -535,9 +573,13 @@ header h1 {
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
     z-index: 1000;
-    align-items: center;
+    /* The dialog now grows to its full content height, so this full-viewport layer is what
+       scrolls (that is the page-level scrollbar). align-items:flex-start plus margin:auto on
+       the content keeps it centred without clipping the top when it is taller than the screen. */
+    align-items: flex-start;
     justify-content: center;
     padding: 2rem;
+    overflow-y: auto;
 }
 
 .modal.active {
@@ -550,8 +592,7 @@ header h1 {
     border-radius: 20px;
     max-width: 900px;
     width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
+    margin: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 

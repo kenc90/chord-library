@@ -803,9 +803,11 @@ document.getElementById('zoom-toggle')?.addEventListener('click', () => {
 // Restore the saved size before the first grid render so nothing reflows afterwards.
 setDiagramZoom(localStorage.getItem(ZOOM_STORAGE_KEY) === '1');
 
-document.querySelectorAll('.category-btn').forEach(btn => {
+// Only real category tabs carry data-category; the zoom tab reuses the tab styling but must
+// not be swept up here (it would render an undefined category and clear the active tab).
+document.querySelectorAll('.category-btn[data-category]').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.category-btn[data-category]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         renderCategory(btn.dataset.category);
     });
