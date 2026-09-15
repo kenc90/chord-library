@@ -88,6 +88,10 @@ body {
     text-align: center;
 }
 
+[data-theme='light'] .language-modal-dialog {
+    background: #fff;
+}
+
 .language-modal-title {
     font-size: 1.1rem;
     color: var(--accent);
@@ -205,6 +209,10 @@ header h1 {
 .nav-link.active {
     background: var(--accent);
     color: var(--text-on-amber);
+}
+
+[data-theme='light'] .nav-link.active {
+    color: #fff;
 }
 
 /* Mobile Navigation */
@@ -382,6 +390,10 @@ header h1 {
     background: var(--teal);
     color: #102a3a;
     box-shadow: 0 4px 15px rgba(76, 175, 192, 0.35);
+}
+
+[data-theme='light'] .category-btn.utility-category.active {
+    color: #fff;
 }
 
 /* Chords Grid */
