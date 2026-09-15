@@ -215,6 +215,7 @@ function getChordAnchorBounds(caretRange) {
 }
 
 function openChordFinder(event) {
+    if (event.button !== 0) return;
     const label = event.target.closest?.('.chord-label');
     if (label) {
         event.preventDefault();
@@ -575,6 +576,12 @@ document.getElementById('lyrics-sheet').addEventListener('mouseup', rememberSele
 document.getElementById('lyrics-sheet').addEventListener('keyup', rememberSelection);
 document.getElementById('lyrics-sheet').addEventListener('paste', pastePlainText);
 document.getElementById('lyrics-sheet').addEventListener('mousedown', openChordFinder);
+document.getElementById('lyrics-sheet').addEventListener('contextmenu', event => {
+    const label = event.target.closest?.('.chord-label');
+    if (!label) return;
+    event.preventDefault();
+    removeChord(label.closest('.chord-annotation') || label);
+});
 document.getElementById('lyrics-sheet').addEventListener('pointermove', updateSnapIndicator);
 document.getElementById('lyrics-sheet').addEventListener('pointerleave', () => {
     document.getElementById('lyrics-sheet').classList.remove('chord-row-hover');
