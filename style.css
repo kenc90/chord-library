@@ -11,11 +11,11 @@ body {
     color: var(--text-body);
 }
 
-/* Reserved even when nothing scrolls, so locking the page for a modal cannot nudge the
-   layout sideways by the scrollbar width. */
-html {
-    scrollbar-gutter: stable;
-}
+/* No scrollbar-gutter: stable here on purpose. The page lock below takes the page scrollbar
+   away, which frees its column, so an overlay that overflows paints its own scrollbar
+   exactly on the window edge, where the page scrollbar was. Reserving that column instead
+   cannot work: fixed layers are clipped at the layout viewport, so a scrollbar pushed into
+   the reserved gutter is not visible at all. */
 
 /* Modal scroll policy, for every dialog on the site (style.css is loaded by all pages).
    A dialog never scrolls itself: each overlay layer is a full-viewport scroller, so the
