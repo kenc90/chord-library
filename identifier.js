@@ -16,12 +16,20 @@ function parseNote(name) {
     return { letter: m[1], acc: m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0 };
 }
 function accidentalToSymbol(a) {
-    if (a >= 2) return 'x';   // double sharp
+    // Only ever asked for at most one sign now (see spellNoteAt), but doubled signs repeat
+    // themselves so the formatter stays honest: matching the plain '#'/'b' spelling used
+    // everywhere else rather than the typographic 'x' shorthand for a double sharp.
+    if (a >= 2) return '#'.repeat(a);
     if (a === 1) return '#';
     if (a === 0) return '';
     if (a === -1) return 'b';
-    return 'bb';              // double flat
+    return 'b'.repeat(-a);
 }
+// 'E#', 'B#', 'Cb' and 'Fb' are the letter-correct names for F, C, B and E, and theory books use
+// them freely (the #5 of E augmented is B#). A chord chart reader doesn't expect them, so they are
+// printed as their plain pitch instead, like the double-accidental cases in spellNoteAt.
+const UNFAMILIAR_SPELLINGS = ['E#', 'B#', 'Cb', 'Fb'];
+
 // Spell the chord tone sitting `letterSteps` letters and `semitones` above `rootName`.
 function spellNoteAt(rootName, letterSteps, semitones) {
     const r = parseNote(rootName);
@@ -33,7 +41,12 @@ function spellNoteAt(rootName, letterSteps, semitones) {
     let diff = targetPc - LETTER_PCS[letterIdx];
     while (diff > 3) diff -= 12;
     while (diff < -3) diff += 12;
-    return LETTERS[letterIdx] + accidentalToSymbol(diff);
+    // A degree that can only be named with a double accidental (C#aug's #5 is G##, Ebdim's b5 is
+    // Bbb) is textbook right but reads as garbage on a chord chart, so those tones fall back to
+    // their plain enharmonic name - the way charts print Cdim7 as C Eb Gb A.
+    if (Math.abs(diff) > 1) return NOTES[targetPc];
+    const spelled = LETTERS[letterIdx] + accidentalToSymbol(diff);
+    return UNFAMILIAR_SPELLINGS.includes(spelled) ? NOTES[targetPc] : spelled;
 }
 // Display name for a pitch class, respecting the current chord spelling context.
 function pcToDisplayName(pc) {
