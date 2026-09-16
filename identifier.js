@@ -195,6 +195,51 @@ function buildNotePositions() {
     }
 }
 
+// The picked notes are kept in localStorage so reloading doesn't throw away a shape that was
+// being worked out. Only the user's own clicks reach saveSelection(); previewed and pinned chords
+// are never stored.
+const SELECTED_NOTES_STORAGE_KEY = 'chord-identifier-selected-notes';
+
+function saveSelection() {
+    // While a suggestion is previewed or pinned, `selectedNotes` holds that chord's shape instead of
+    // the user's own picks, so there is nothing of theirs to record right now.
+    if (pinnedChord || isPreviewing) return;
+    localStorage.setItem(SELECTED_NOTES_STORAGE_KEY, JSON.stringify([...selectedNotes]));
+}
+
+// Reads back the stored keys, dropping anything no longer on the board. Named apart from
+// `savedNotes`, which is the unrelated hover-preview stash.
+function loadSelection() {
+    try {
+        const keys = JSON.parse(localStorage.getItem(SELECTED_NOTES_STORAGE_KEY) || '[]');
+        return Array.isArray(keys) ? keys.filter(key => key in notePositions) : [];
+    } catch {
+        return [];
+    }
+}
+
+// Redraw every marker from `selectedNotes`.
+function paintSelection() {
+    document.querySelectorAll('.fret-marker').forEach(marker => marker.remove());
+    selectedNotes.forEach(key => {
+        const [stringIndex, fret] = key.split('-').map(Number);
+        const cell = document.querySelector(`.fret-cell[data-string="${stringIndex}"][data-fret="${fret}"]`);
+        if (!cell) return;
+        const marker = document.createElement('div');
+        marker.className = 'fret-marker';
+        marker.textContent = displayNote(notePositions[key]);
+        cell.appendChild(marker);
+    });
+}
+
+function restoreSelection() {
+    selectedNotes = new Set(loadSelection());
+    if (!selectedNotes.size) return;
+    paintSelection();
+    updateSelectedNotesDisplay();
+    identifyChord();
+}
+
 // Handle fret click
 function handleFretClick(e) {
     const cell = e.currentTarget;
@@ -237,6 +282,7 @@ function handleFretClick(e) {
 
     updateSelectedNotesDisplay();
     identifyChord(); // Auto-identify when notes change
+    saveSelection();
 }
 
 // Update the selected notes display
@@ -697,6 +743,7 @@ function clearAll() {
     currentPreviewChord = null;
     spellContext = null;
     selectedNotes.clear();
+    saveSelection();
     document.querySelectorAll('.fret-marker').forEach(marker => marker.remove());
     updateSelectedNotesDisplay();
     document.getElementById('chord-name-result').textContent = '-';
@@ -727,20 +774,11 @@ function shiftChord(direction) {
     });
 
     selectedNotes = new Set(positions.map(([stringIndex, fret]) => `${stringIndex}-${fret + direction}`));
-    document.querySelectorAll('.fret-marker').forEach(marker => marker.remove());
-    selectedNotes.forEach(key => {
-        const [stringIndex, fret] = key.split('-').map(Number);
-        const cell = document.querySelector(`.fret-cell[data-string="${stringIndex}"][data-fret="${fret}"]`);
-        if (cell) {
-            const marker = document.createElement('div');
-            marker.className = 'fret-marker';
-            marker.textContent = displayNote(notePositions[key]);
-            cell.appendChild(marker);
-        }
-    });
+    paintSelection();
 
     updateSelectedNotesDisplay();
     identifyChord();
+    saveSelection();
 }
 
 // Event listeners
@@ -756,3 +794,4 @@ document.addEventListener('languagechange', () => {
 
 // Initialize
 renderFretboard();
+restoreSelection();
