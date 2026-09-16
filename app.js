@@ -385,7 +385,7 @@ const CHORD_VOICINGS = {
         { name: 'Gmaj7', frets: [3, 2, 0, 0, 0, 2], fingers: [2, 1, 0, 0, 0, 3], label: 'Open (alt fingers)' },
     ],
     'Abmaj7': [
-        { name: 'Abmaj7', frets: [4, 3, 5, 5, 4, 4], fingers: [1, 2, 3, 4, 1, 1], barre: { fret: 4, from: 6, to: 1 }, label: 'Open Position' },
+        { name: 'Abmaj7', frets: [4, -1, 5, 5, 4, -1], fingers: [1, 0, 2, 3, 1, 0], barre: { fret: 4, from: 6, to: 2 }, label: 'Small shape (4th fret)' },
         { name: 'Abmaj7', frets: [4, 6, 5, 5, 4, 4], fingers: [1, 4, 2, 3, 1, 1], baseFret: 3, barre: { fret: 4, from: 6, to: 1 }, label: 'E-shape Barre (4th fret)' },
         { name: 'Abmaj7', frets: [-1, 11, 13, 12, 13, 11], fingers: [0, 1, 3, 2, 4, 1], baseFret: 1, barre: { fret: 11, from: 5, to: 1 }, label: 'A-shape Barre (11th fret)' },
     ],
