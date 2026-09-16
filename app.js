@@ -23,7 +23,7 @@ function savePinnedChordNames(pinnedChordNames) {
 const CHORDS = {
     major: [
         { name: 'C', frets: [-1, 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0] },
-        { name: 'C#', frets: [-1, 4, 3, 1, 2, 1], fingers: [0, 4, 3, 1, 2, 1], baseFret: 1, barre: { fret: 1, from: 3, to: 1 } },
+        { name: 'C#', frets: [-1, 4, 6, 6, 6, 4], fingers: [0, 1, 2, 3, 4, 1], baseFret: 1, barre: { fret: 4, from: 5, to: 1 } },
         { name: 'D', frets: [-1, -1, 0, 2, 3, 2], fingers: [0, 0, 0, 1, 3, 2] },
         { name: 'Eb', frets: [-1, -1, 1, 3, 4, 3], fingers: [0, 0, 1, 2, 4, 3] },
         { name: 'E', frets: [0, 2, 2, 1, 0, 0], fingers: [0, 2, 3, 1, 0, 0] },
@@ -51,7 +51,7 @@ const CHORDS = {
     ],
     seventh: [
         { name: 'C7', frets: [-1, 3, 2, 3, 1, 0], fingers: [0, 3, 2, 4, 1, 0] },
-        { name: 'C#7', frets: [-1, 4, 6, 4, 6, 4], fingers: [0, 1, 2, 3, 4, 1], barre: { fret: 4, from: 5, to: 1 } },
+        { name: 'C#7', frets: [-1, 4, 6, 4, 6, 4], fingers: [0, 1, 2, 1, 3, 1], barre: { fret: 4, from: 5, to: 1 } },
         { name: 'D7', frets: [-1, -1, 0, 2, 1, 2], fingers: [0, 0, 0, 2, 1, 3] },
         { name: 'Eb7', frets: [-1, -1, 1, 3, 2, 3], fingers: [0, 0, 1, 3, 2, 4] },
         { name: 'E7', frets: [0, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0] },
@@ -159,7 +159,6 @@ const CHORD_VOICINGS = {
         { name: 'C', frets: [-1, -1, 5, 5, 5, 8], fingers: [0, 0, 1, 2, 3, 4], baseFret: 1, label: 'D-shape (5th fret)' },
     ],
     'C#': [
-        { name: 'C#', frets: [-1, 4, 3, 1, 2, 1], fingers: [0, 4, 3, 1, 2, 1], barre: { fret: 1, from: 3, to: 1 }, label: 'Open A-shape (4th fret)' },
         { name: 'C#', frets: [9, 11, 11, 10, 9, 9], fingers: [1, 3, 4, 2, 1, 1], baseFret: 8, barre: { fret: 9, from: 6, to: 1 }, label: 'E-shape Barre (9th fret)' },
         { name: 'C#', frets: [-1, 4, 6, 6, 6, 4], fingers: [0, 1, 2, 3, 4, 1], baseFret: 1, barre: { fret: 4, from: 5, to: 1 }, label: 'A-shape Barre (4th fret)' },
     ],
@@ -286,7 +285,7 @@ const CHORD_VOICINGS = {
     'C#7': [
         { name: 'C#7', frets: [-1, 4, 3, 4, 2, -1], fingers: [0, 3, 2, 4, 1, 0], label: 'Open Position' },
         { name: 'C#7', frets: [9, 11, 9, 10, 9, 9], fingers: [1, 3, 1, 2, 1, 1], baseFret: 8, barre: { fret: 9, from: 6, to: 1 }, label: 'E7-shape Barre (9th fret)' },
-        { name: 'C#7', frets: [-1, 4, 6, 4, 6, 4], fingers: [0, 1, 3, 1, 4, 2], baseFret: 1, label: 'A7-shape (4th fret)' },
+        { name: 'C#7', frets: [-1, 4, 6, 4, 6, 4], fingers: [0, 1, 2, 1, 3, 1], baseFret: 1, barre: { fret: 4, from: 5, to: 1 }, label: 'A7-shape (4th fret)' },
     ],
     'D7': [
         { name: 'D7', frets: [-1, -1, 0, 2, 1, 2], fingers: [0, 0, 0, 2, 1, 3], label: 'Open Position' },
