@@ -346,7 +346,7 @@ const CHORD_VOICINGS = {
     ],
     'C#maj7': [
         { name: 'C#maj7', frets: [-1, 4, 3, 5, -1, 4], fingers: [0, 1, 1, 3, 0, 2], label: 'Open Position' },
-        { name: 'C#maj7', frets: [-1, 4, 6, 5, 6, 4], fingers: [0, 1, 3, 2, 4, 1], baseFret: 1, label: 'A-shape (4th fret)' },
+        { name: 'C#maj7', frets: [-1, 4, 6, 5, 6, 4], fingers: [0, 1, 3, 2, 4, 1], baseFret: 1, barre: { fret: 4, from: 5, to: 1 }, label: 'A-shape Barre (4th fret)' },
         { name: 'C#maj7', frets: [9, 11, 10, 10, 9, 9], fingers: [1, 4, 2, 3, 1, 1], baseFret: 8, barre: { fret: 9, from: 6, to: 1 }, label: 'E-shape Barre (9th fret)' },
     ],
     'Dmaj7': [
