@@ -515,6 +515,8 @@ body {
     font-weight: 700;
     white-space: nowrap;
     cursor: pointer;
+    /* Lets a touch drag move the chord instead of scrolling the sheet. */
+    touch-action: none;
 }
 
 .chord-label:hover {
@@ -540,6 +542,21 @@ body {
 /* Toggled while the pointer is over a chord row spot where a chord can be inserted. */
 .lyrics-sheet.chord-row-hover {
     cursor: pointer;
+}
+
+/* While a chord is in flight: no text selection, and the source label dims to mark where it came
+   from while the snap box shows where it will land. */
+.lyrics-sheet.chord-dragging {
+    cursor: default;
+    user-select: none;
+}
+
+.chord-dragging .chord-label {
+    cursor: grabbing;
+}
+
+.chord-drag-source .chord-label {
+    opacity: 0.3;
 }
 
 /* The dialog grows with its content, so the overlay itself scrolls when it is taller than the viewport. */

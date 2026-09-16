@@ -5,6 +5,10 @@ let savedSelection = null;
 let pendingChordRange = null;
 let editingAnnotation = null;
 let pendingKeys = [];
+// A chord label currently being dragged along its lyric line, and the click that follows the
+// drop (which must not open the editor).
+let chordDrag = null;
+let suppressLabelClick = false;
 
 const SONG_KEYS = ['C', 'Cm', 'C#', 'C#m', 'D', 'Dm', 'Eb', 'Ebm', 'E', 'Em', 'F', 'Fm', 'F#', 'F#m', 'G', 'Gm', 'Ab', 'Abm', 'A', 'Am', 'Bb', 'Bbm', 'B', 'Bm'];
 
@@ -293,7 +297,7 @@ function escapeHtml(value) {
 }
 
 function chordLabelHtml(chordName) {
-    return `<button class="chord-label" type="button" contenteditable="false" data-chord="${escapeHtml(chordName)}" title="${t('updateChord')}">${escapeHtml(chordName)}</button>`;
+    return `<button class="chord-label" type="button" contenteditable="false" data-chord="${escapeHtml(chordName)}" title="${t('chordLabelHint')}">${escapeHtml(chordName)}</button>`;
 }
 
 function addChord(chordName) {
@@ -358,15 +362,7 @@ function getChordAnchorBounds(caretRange) {
 
 function openChordFinder(event) {
     if (event.button !== 0) return;
-    const label = event.target.closest?.('.chord-label');
-    if (label) {
-        event.preventDefault();
-        pendingChordRange = null;
-        editingAnnotation = label.closest('.chord-annotation') || label;
-        openChordFinderModal();
-        return;
-    }
-
+    // Labels are handled by the click listener instead, so a press can turn into a drag first.
     const insertion = getChordInsertionPoint(event);
     if (!insertion) return;
 
@@ -396,20 +392,94 @@ function renderChordFinderMode() {
 }
 
 function updateSnapIndicator(event) {
+    if (chordDrag?.active) return;
     const sheet = document.getElementById('lyrics-sheet');
-    const indicator = sheet.querySelector('.chord-snap-indicator');
     const insertion = getChordInsertionPoint(event);
-    const anchorBounds = insertion && getChordAnchorBounds(insertion.caretRange);
-    sheet.classList.toggle('chord-row-hover', Boolean(anchorBounds));
+    const anchored = insertion ? showSnapIndicator(insertion.lineBounds, insertion.caretRange) : false;
+    if (!anchored) hideSnapIndicator();
+    sheet.classList.toggle('chord-row-hover', anchored);
+}
+
+// Places the dashed box over the lyric character a chord would anchor to.
+function showSnapIndicator(lineBounds, caretRange) {
+    const indicator = document.querySelector('.chord-snap-indicator');
+    const anchorBounds = indicator && getChordAnchorBounds(caretRange);
     if (!anchorBounds) {
-        indicator.classList.remove('visible');
-        return;
+        indicator?.classList.remove('visible');
+        return false;
     }
-    const sheetBounds = sheet.getBoundingClientRect();
+    const sheetBounds = document.getElementById('lyrics-sheet').getBoundingClientRect();
     indicator.style.left = `${anchorBounds.left - sheetBounds.left}px`;
     indicator.style.width = `${anchorBounds.width}px`;
-    indicator.style.top = `${insertion.lineBounds.top - sheetBounds.top + 3}px`;
+    indicator.style.top = `${lineBounds.top - sheetBounds.top + 3}px`;
     indicator.classList.add('visible');
+    return true;
+}
+
+function hideSnapIndicator() {
+    document.querySelector('.chord-snap-indicator')?.classList.remove('visible');
+}
+
+// A chord label can be picked up and slid left or right to re-anchor it to another lyric
+// character. Snapping is the same hit-test the insert-on-click path uses, so a dropped chord
+// lands exactly where a newly inserted one would.
+const CHORD_DRAG_START = 4;
+
+function beginChordDrag(event) {
+    if (event.button !== 0) return;
+    // Any fresh press clears the flag that swallows the click following a drop.
+    suppressLabelClick = false;
+    const label = event.target.closest?.('.chord-label');
+    const annotation = label?.closest('.chord-annotation');
+    const line = label?.closest('div, p');
+    if (!annotation || !line) return;
+    chordDrag = { annotation, line, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, active: false, dropRange: null };
+    // Capture keeps the move and up events coming even when the pointer leaves the small label.
+    label.setPointerCapture?.(event.pointerId);
+}
+
+function dragChord(event) {
+    if (!chordDrag || chordDrag.pointerId !== event.pointerId) return;
+    if (!chordDrag.active) {
+        const moved = Math.abs(event.clientX - chordDrag.startX) >= CHORD_DRAG_START
+            || Math.abs(event.clientY - chordDrag.startY) >= CHORD_DRAG_START;
+        if (!moved) return;
+        chordDrag.active = true;
+        const sheet = document.getElementById('lyrics-sheet');
+        sheet.classList.add('chord-dragging');
+        sheet.classList.remove('chord-row-hover');
+        chordDrag.annotation.classList.add('chord-drag-source');
+        // The chord travels on its own; no text selection should come along.
+        window.getSelection()?.removeAllRanges();
+    }
+    event.preventDefault();
+    // Only the horizontal position follows the pointer, so the chord stays on its own line.
+    const lineBounds = chordDrag.line.getBoundingClientRect();
+    const x = Math.min(Math.max(event.clientX, lineBounds.left + 1), lineBounds.right - 1);
+    const caretRange = document.caretRangeFromPoint?.(x, lineBounds.top + LYRIC_TEXT_HIT_OFFSET);
+    const textNode = caretRange?.startContainer;
+    // Real lyric text only: never this label's own text nor another chord's, and nothing outside
+    // the line the drag started on.
+    if (textNode?.nodeType !== Node.TEXT_NODE || !chordDrag.line.contains(textNode) || textNode.parentElement.closest('.chord-annotation')) return;
+    // Keep the last good target when there is no character to measure here, so letting go over a
+    // gap still lands the chord on the nearest character that did fit.
+    if (showSnapIndicator(lineBounds, caretRange)) chordDrag.dropRange = caretRange.cloneRange();
+}
+
+function endChordDrag(event, commit = true) {
+    if (!chordDrag || (event && chordDrag.pointerId !== event.pointerId)) return;
+    const drag = chordDrag;
+    chordDrag = null;
+    document.getElementById('lyrics-sheet').classList.remove('chord-dragging');
+    drag.annotation.classList.remove('chord-drag-source');
+    hideSnapIndicator();
+    // Under the drag threshold it was just a click, which the click listener handles.
+    if (!drag.active) return;
+    suppressLabelClick = true;
+    if (!commit || !drag.dropRange) return;
+    drag.dropRange.insertNode(drag.annotation);
+    syncSheet();
+    renderReference();
 }
 
 // Turns whatever is in the bass field into a note name from the shared table, or '' when the
@@ -779,6 +849,28 @@ document.getElementById('lyrics-sheet').addEventListener('mouseup', rememberSele
 document.getElementById('lyrics-sheet').addEventListener('keyup', rememberSelection);
 document.getElementById('lyrics-sheet').addEventListener('paste', pastePlainText);
 document.getElementById('lyrics-sheet').addEventListener('mousedown', openChordFinder);
+document.getElementById('lyrics-sheet').addEventListener('pointerdown', beginChordDrag);
+document.getElementById('lyrics-sheet').addEventListener('pointermove', dragChord);
+document.getElementById('lyrics-sheet').addEventListener('pointerup', event => endChordDrag(event));
+document.getElementById('lyrics-sheet').addEventListener('pointercancel', event => endChordDrag(event, false));
+// The browser would otherwise drag the label (or the selection) itself and move DOM around
+// behind our back, so a press on a chord label never starts a native drag.
+document.getElementById('lyrics-sheet').addEventListener('dragstart', event => {
+    if (chordDrag) event.preventDefault();
+});
+document.getElementById('lyrics-sheet').addEventListener('click', event => {
+    // A drag ends with a click on the label; that one only has to be swallowed.
+    if (suppressLabelClick) {
+        suppressLabelClick = false;
+        return;
+    }
+    const label = event.target.closest?.('.chord-label');
+    if (!label) return;
+    event.preventDefault();
+    pendingChordRange = null;
+    editingAnnotation = label.closest('.chord-annotation') || label;
+    openChordFinderModal();
+});
 document.getElementById('lyrics-sheet').addEventListener('contextmenu', event => {
     const label = event.target.closest?.('.chord-label');
     if (!label) return;
@@ -787,8 +879,9 @@ document.getElementById('lyrics-sheet').addEventListener('contextmenu', event =>
 });
 document.getElementById('lyrics-sheet').addEventListener('pointermove', updateSnapIndicator);
 document.getElementById('lyrics-sheet').addEventListener('pointerleave', () => {
+    if (chordDrag?.active) return;
     document.getElementById('lyrics-sheet').classList.remove('chord-row-hover');
-    document.querySelector('.chord-snap-indicator')?.classList.remove('visible');
+    hideSnapIndicator();
 });
 document.getElementById('lyrics-sheet').addEventListener('dragenter', event => {
     event.preventDefault();
