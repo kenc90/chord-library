@@ -300,6 +300,13 @@ function chordLabelHtml(chordName) {
     return `<button class="chord-label" type="button" contenteditable="false" data-chord="${escapeHtml(chordName)}" title="${t('chordLabelHint')}">${escapeHtml(chordName)}</button>`;
 }
 
+function createChordAnnotation(chordName) {
+    const annotation = document.createElement('span');
+    annotation.className = 'chord-annotation';
+    annotation.innerHTML = chordLabelHtml(chordName);
+    return annotation;
+}
+
 function addChord(chordName) {
     const sheet = document.getElementById('lyrics-sheet');
     if (!chordName) return;
@@ -315,9 +322,7 @@ function addChord(chordName) {
 
     if (!pendingChordRange || !sheet.contains(pendingChordRange.commonAncestorContainer)) return;
 
-    const annotation = document.createElement('span');
-    annotation.className = 'chord-annotation';
-    annotation.innerHTML = chordLabelHtml(chordName);
+    const annotation = createChordAnnotation(chordName);
     pendingChordRange.insertNode(annotation);
     pendingChordRange.setStartAfter(annotation);
     pendingChordRange.collapse(true);
@@ -635,10 +640,125 @@ function rememberSelection() {
     }
 }
 
-function pastePlainText(event) {
+// Chords live in a row above the lyric text, so a copied selection would either lose them or
+// smear their names into the words. ChordPro-style markers go on the clipboard instead:
+// [Am]he[C]llo reads sensibly anywhere else and can be pasted straight back in.
+// Deliberately strict, so ordinary bracketed directions like [Chorus] stay as lyrics.
+const CHORD_MARKUP = /\[(?:[A-G](?:#|b)?(?:maj7|m7|min|maj|dim|aug|sus2|sus4|sus|add9|m|7|6|9|5)?(?:\/[A-G](?:#|b)?)?)\]/;
+// Same pattern, global, for scanning a whole line: a /g regex keeps lastIndex between calls, so
+// the stateless one above is never used for repeated matching.
+const CHORD_MARKUP_ALL = new RegExp(CHORD_MARKUP.source, 'g');
+
+// Text of a copied fragment, chords turned back into markers at the character they sit on.
+function serializeLyrics(fragment) {
+    const clone = fragment.cloneNode(true);
+    clone.querySelectorAll('.chord-annotation').forEach(annotation => {
+        const label = annotation.querySelector('.chord-label');
+        annotation.replaceWith(document.createTextNode(label ? `[${label.dataset.chord}]` : ''));
+    });
+    let text = '';
+    clone.childNodes.forEach(node => {
+        // One line per lyric line; inline leftovers of a partly selected line stay joined up.
+        if (/^(DIV|P)$/.test(node.nodeName) && text && !text.endsWith('\n')) text += '\n';
+        text += node.textContent;
+    });
+    return text;
+}
+
+// A chord has no width of its own on the lyric row, so one anchored on a line's first character
+// sits at a spot the mouse cannot reach: dragging to the start of the text stops inside the text
+// node and leaves the annotation outside the selection. Chords sitting immediately behind the
+// opening position therefore get added to the copy by hand - which is also the right reading, as
+// each of them belongs to the first selected character.
+function chordsAtSelectionStart(range) {
+    if (range.startOffset !== 0 || range.startContainer.nodeType !== Node.TEXT_NODE) return '';
+    let node = range.startContainer.previousSibling;
+    let markup = '';
+    while (node?.nodeType === Node.ELEMENT_NODE && node.classList.contains('chord-annotation')) {
+        const label = node.querySelector('.chord-label');
+        markup = `${label ? `[${label.dataset.chord}]` : ''}${markup}`;
+        node = node.previousSibling;
+    }
+    return markup;
+}
+
+function copyLyrics(event, isCut) {
+    const sheet = document.getElementById('lyrics-sheet');
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    if (!range || range.isCollapsed || !sheet.contains(range.commonAncestorContainer)) return;
+    const text = chordsAtSelectionStart(range) + serializeLyrics(range.cloneContents());
+    // No chords in it: the browser's own copy does just as well.
+    if (!CHORD_MARKUP.test(text)) return;
     event.preventDefault();
-    const text = event.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
+    event.clipboardData.setData('text/plain', text);
+    if (!isCut) return;
+    document.execCommand('delete');
+    syncSheet();
+    renderReference();
+}
+
+// A pasted line rebuilt into lyric text with chord annotations at their marked offsets.
+function buildLyricLine(text) {
+    const fragment = document.createDocumentFragment();
+    let position = 0;
+    for (const match of text.matchAll(CHORD_MARKUP_ALL)) {
+        if (match.index > position) fragment.appendChild(document.createTextNode(text.slice(position, match.index)));
+        fragment.appendChild(createChordAnnotation(match[0].slice(1, -1)));
+        position = match.index + match[0].length;
+    }
+    if (position < text.length) fragment.appendChild(document.createTextNode(text.slice(position)));
+    return fragment;
+}
+
+function insertLyricLines(lines) {
+    const sheet = document.getElementById('lyrics-sheet');
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    const range = selection.getRangeAt(0).cloneRange();
+    const node = range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer;
+    // The line the caret is on; the sheet itself doesn't count, it holds no text of its own.
+    let line = node?.closest('div, p');
+    if (line === sheet) line = null;
+    range.deleteContents();
+    const first = buildLyricLine(lines[0]);
+    const inserted = [...first.childNodes];
+    range.insertNode(first);
+    lines.slice(1).forEach(text => {
+        // Anything pasted after the first line becomes a lyric line of its own.
+        const next = document.createElement('div');
+        next.appendChild(buildLyricLine(text));
+        if (line) line.after(next);
+        else sheet.appendChild(next);
+        line = next;
+    });
+    // Land the caret behind the pasted text so typing continues from there.
+    const caret = document.createRange();
+    if (line && lines.length > 1) {
+        caret.selectNodeContents(line);
+        caret.collapse(false);
+    } else if (inserted.length) {
+        caret.setStartAfter(inserted[inserted.length - 1]);
+        caret.collapse(true);
+    } else {
+        return;
+    }
+    selection.removeAllRanges();
+    selection.addRange(caret);
+}
+
+function pasteLyrics(event) {
+    event.preventDefault();
+    const text = event.clipboardData.getData('text/plain').replace(/\r\n?/g, '\n');
+    const lines = text.split('\n');
+    // Only chord markup needs rebuilding; everything else stays a plain-text paste.
+    if (!lines.some(line => CHORD_MARKUP.test(line))) {
+        document.execCommand('insertText', false, text);
+        return;
+    }
+    insertLyricLines(lines);
+    syncSheet();
+    renderReference();
 }
 
 function exportSong() {
@@ -847,7 +967,9 @@ document.getElementById('lyrics-sheet').addEventListener('input', () => {
 });
 document.getElementById('lyrics-sheet').addEventListener('mouseup', rememberSelection);
 document.getElementById('lyrics-sheet').addEventListener('keyup', rememberSelection);
-document.getElementById('lyrics-sheet').addEventListener('paste', pastePlainText);
+document.getElementById('lyrics-sheet').addEventListener('paste', pasteLyrics);
+document.getElementById('lyrics-sheet').addEventListener('copy', event => copyLyrics(event, false));
+document.getElementById('lyrics-sheet').addEventListener('cut', event => copyLyrics(event, true));
 document.getElementById('lyrics-sheet').addEventListener('mousedown', openChordFinder);
 document.getElementById('lyrics-sheet').addEventListener('pointerdown', beginChordDrag);
 document.getElementById('lyrics-sheet').addEventListener('pointermove', dragChord);
