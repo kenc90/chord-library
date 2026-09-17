@@ -754,39 +754,3 @@
 .fb-note.other text {
     fill: var(--text-soft);
 }
-
-.fretboard-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-    margin-top: 1rem;
-}
-
-.fb-legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    color: var(--text-soft);
-}
-
-.fb-legend-item::before {
-    content: '';
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.fb-legend-root::before {
-    background: var(--danger);
-}
-
-.fb-legend-scale::before {
-    background: var(--accent);
-}
-
-.fb-legend-other::before {
-    background: var(--bg-deep);
-    border: 1px solid rgba(var(--ink-rgb), 0.15);
-}
