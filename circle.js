@@ -194,8 +194,31 @@ function renderChordShape(chord, label) {
 }
 
 // State
-let currentKey = 0;
-let currentMode = 0;
+// Persist the selected key/mode so the page reopens where the user left it.
+const CIRCLE_STATE_STORAGE_KEY = 'guitar-chords-library-circle-state';
+
+function loadCircleState() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(CIRCLE_STATE_STORAGE_KEY)) || {};
+        const validKey = Number.isInteger(saved.key) && saved.key >= 0 && saved.key < NOTES.length;
+        const validMode = Number.isInteger(saved.mode) && saved.mode >= 0 && saved.mode < MODES.length;
+        return { key: validKey ? saved.key : 0, mode: validMode ? saved.mode : 0 };
+    } catch {
+        return { key: 0, mode: 0 };
+    }
+}
+
+function saveCircleState() {
+    try {
+        localStorage.setItem(CIRCLE_STATE_STORAGE_KEY, JSON.stringify({ key: currentKey, mode: currentMode }));
+    } catch {
+        // Ignore write failures (e.g. storage disabled or full).
+    }
+}
+
+const initialCircleState = loadCircleState();
+let currentKey = initialCircleState.key;
+let currentMode = initialCircleState.mode;
 let isDraggingCircle = false;
 
 const LOCALIZED_DESCRIPTIONS = {
@@ -645,6 +668,13 @@ function updateAll() {
     renderDiatonicChords();
     renderRelationships();
     renderFretboard();
+    saveCircleState();
+}
+
+// Reflect the (possibly restored) key/mode onto the control buttons.
+function syncControlButtons() {
+    document.querySelectorAll('.key-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.key) === currentKey));
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.mode) === currentMode));
 }
 
 // Event listeners
@@ -681,5 +711,6 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('languagechange', updateAll);
 
-// Initial render
+// Initial render (sync the UI to any persisted selection first)
+syncControlButtons();
 updateAll();
