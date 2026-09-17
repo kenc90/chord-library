@@ -645,3 +645,142 @@
     font-weight: 600;
     text-anchor: middle;
 }
+
+/* Key Fretboard (24-fret diagram under the circle) */
+.fretboard-section {
+    margin-bottom: 2rem;
+}
+
+.fretboard-section h3 {
+    color: var(--accent);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.fretboard-card {
+    background: rgba(var(--ink-rgb), 0.05);
+    border: 1px solid rgba(var(--ink-rgb), 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.fretboard-scroll {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+#fretboard-svg {
+    display: block;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.fb-string {
+    stroke: rgba(var(--ink-rgb), 0.35);
+    stroke-width: 1;
+}
+
+.fb-fret {
+    stroke: rgba(var(--ink-rgb), 0.18);
+    stroke-width: 1;
+}
+
+.fb-nut {
+    stroke: var(--line-nut);
+    stroke-width: 4;
+}
+
+.fb-label {
+    fill: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.fb-fretnum {
+    fill: var(--text-muted);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
+}
+
+.fb-note text {
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+}
+
+.fb-note.scale circle {
+    fill: var(--accent);
+    stroke: var(--accent);
+    stroke-width: 1;
+}
+
+.fb-note.scale text {
+    fill: var(--text-on-amber);
+}
+
+/* In light mode the amber darkens, so switch the in-key labels to white. */
+[data-theme='light'] .fb-note.scale text {
+    fill: #fff;
+}
+
+.fb-note.root circle {
+    fill: var(--danger);
+    stroke: var(--danger);
+    stroke-width: 1;
+}
+
+.fb-note.root text {
+    fill: #fff;
+}
+
+.fb-note.other {
+    opacity: 0.55;
+}
+
+.fb-note.other circle {
+    fill: rgba(var(--ink-rgb), 0.35);
+}
+
+.fb-note.other text {
+    fill: var(--text-bright);
+}
+
+.fretboard-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.fb-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+}
+
+.fb-legend-item::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.fb-legend-root::before {
+    background: var(--danger);
+}
+
+.fb-legend-scale::before {
+    background: var(--accent);
+}
+
+.fb-legend-other::before {
+    background: rgba(var(--ink-rgb), 0.35);
+}

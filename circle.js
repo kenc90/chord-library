@@ -569,12 +569,82 @@ function getKeySignature(key, mode) {
     return sharpsFlats[majorKey] || '';
 }
 
+// Render a 24-fret guitar fretboard (standard E-A-D-G-B-E tuning) with every
+// position labelled by its pitch class. Notes belonging to the current key/mode
+// are lit up, the tonic is emphasised, and all other notes are dimmed.
+function renderFretboard() {
+    const svg = document.getElementById('fretboard-svg');
+    if (!svg) return;
+
+    // Top row is the high e string, bottom row the low E (matches the identifier page).
+    const STRING_OPEN = [4, 11, 7, 2, 9, 4];
+    const STRING_LABELS = ['e', 'B', 'G', 'D', 'A', 'E'];
+    const NUM_FRETS = 24;
+
+    const fretW = 36;      // horizontal spacing between frets
+    const stringGap = 28;  // vertical spacing between strings
+    const topPad = 22;
+    const labelX = 16;     // string-name column
+    const openX = 34;      // open-string (fret 0) markers
+    const nutX = 50;       // vertical nut line
+    const boardW = NUM_FRETS * fretW;
+    const lastY = topPad + (STRING_OPEN.length - 1) * stringGap;
+    const totalW = nutX + boardW + 18;
+    const totalH = lastY + 34;
+
+    svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+    svg.setAttribute('width', totalW);
+    svg.setAttribute('height', totalH);
+
+    const scaleSet = new Set(getScaleNotes(currentKey, currentMode));
+    const fretX = f => (f === 0 ? openX : nutX + (f - 0.5) * fretW);
+    const stringY = i => topPad + i * stringGap;
+
+    let html = '';
+
+    // Horizontal strings
+    STRING_OPEN.forEach((_, i) => {
+        html += `<line class="fb-string" x1="${nutX}" y1="${stringY(i)}" x2="${nutX + boardW}" y2="${stringY(i)}"/>`;
+    });
+
+    // Nut (thicker) and frets
+    html += `<line class="fb-nut" x1="${nutX}" y1="${topPad - 10}" x2="${nutX}" y2="${lastY + 10}"/>`;
+    for (let f = 1; f <= NUM_FRETS; f++) {
+        const x = nutX + f * fretW;
+        html += `<line class="fb-fret" x1="${x}" y1="${topPad - 10}" x2="${x}" y2="${lastY + 10}"/>`;
+    }
+
+    // Fret numbers at the usual inlay positions
+    [1, 3, 5, 7, 9, 12, 15, 17, 19, 21, 24].forEach(f => {
+        html += `<text class="fb-fretnum" x="${fretX(f)}" y="${lastY + 24}">${f}</text>`;
+    });
+
+    // String labels + note markers
+    STRING_OPEN.forEach((open, i) => {
+        const y = stringY(i);
+        html += `<text class="fb-label" x="${labelX}" y="${y}">${STRING_LABELS[i]}</text>`;
+        for (let f = 0; f <= NUM_FRETS; f++) {
+            const pc = (open + f) % 12;
+            let kind;
+            if (pc === currentKey) kind = 'root';
+            else if (scaleSet.has(pc)) kind = 'scale';
+            else kind = 'other';
+            const r = kind === 'root' ? 13 : 11;
+            const x = fretX(f);
+            html += `<g class="fb-note ${kind}"><circle cx="${x}" cy="${y}" r="${r}"/><text x="${x}" y="${y}">${NOTES[pc]}</text></g>`;
+        }
+    });
+
+    svg.innerHTML = html;
+}
+
 // Update all displays
 function updateAll() {
     renderCircle();
     renderScaleNotes();
     renderDiatonicChords();
     renderRelationships();
+    renderFretboard();
 }
 
 // Event listeners
