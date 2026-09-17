@@ -743,16 +743,16 @@
     fill: #fff;
 }
 
-.fb-note.other {
-    opacity: 0.55;
-}
-
+/* Dim (out-of-key) notes stay fully opaque so the string line doesn't show
+   through them; the muted, low-contrast colours do the "dimming" instead. */
 .fb-note.other circle {
-    fill: rgba(var(--ink-rgb), 0.35);
+    fill: var(--bg-deep);
+    stroke: rgba(var(--ink-rgb), 0.15);
+    stroke-width: 1;
 }
 
 .fb-note.other text {
-    fill: var(--text-bright);
+    fill: var(--text-soft);
 }
 
 .fretboard-legend {
@@ -787,5 +787,6 @@
 }
 
 .fb-legend-other::before {
-    background: rgba(var(--ink-rgb), 0.35);
+    background: var(--bg-deep);
+    border: 1px solid rgba(var(--ink-rgb), 0.15);
 }
