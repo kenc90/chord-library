@@ -364,6 +364,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    /* style.css hides the desktop nav at this breakpoint, but this file
+       re-declares .main-nav as display:flex and loads after it, so the desktop
+       nav would otherwise stay visible. Re-hide it so the mobile nav takes over. */
+    .main-nav {
+        display: none;
+    }
+
     .result-panel {
         grid-template-columns: 1fr;
     }
