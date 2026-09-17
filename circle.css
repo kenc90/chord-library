@@ -671,6 +671,11 @@
 
 #fretboard-svg {
     display: block;
+    /* Scale to fit the card so no scrollbar appears when there's room; only
+       drop below this width (on small screens) does .fretboard-scroll scroll. */
+    width: 100%;
+    height: auto;
+    min-width: 720px;
     user-select: none;
     -webkit-user-select: none;
 }
