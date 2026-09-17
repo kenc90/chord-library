@@ -30,7 +30,7 @@ const CHORDS = {
         { name: 'F', frets: [1, 3, 3, 2, 1, 1], fingers: [1, 3, 4, 2, 1, 1], barre: { fret: 1, from: 6, to: 1 } },
         { name: 'F#', frets: [2, 4, 4, 3, 2, 2], fingers: [1, 3, 4, 2, 1, 1], baseFret: 1, barre: { fret: 2, from: 6, to: 1 } },
         { name: 'G', frets: [3, 2, 0, 0, 0, 3], fingers: [2, 1, 0, 0, 0, 3] },
-        { name: 'Ab', frets: [4, 3, 1, 1, 1, 4], fingers: [3, 2, 1, 1, 1, 4], barre: { fret: 1, from: 4, to: 2 } },
+        { name: 'Ab', frets: [4, 6, 6, 5, 4, 4], fingers: [1, 3, 4, 2, 1, 1], baseFret: 3, barre: { fret: 4, from: 6, to: 1 } },
         { name: 'A', frets: [-1, 0, 2, 2, 2, 0], fingers: [0, 0, 1, 2, 3, 0] },
         { name: 'Bb', frets: [-1, 1, 3, 3, 3, 1], fingers: [0, 1, 2, 3, 4, 1], barre: { fret: 1, from: 5, to: 1 } },
         { name: 'B', frets: [-1, 2, 4, 4, 4, 2], fingers: [0, 1, 2, 3, 4, 1], baseFret: 1, barre: { fret: 2, from: 5, to: 1 } },
@@ -197,7 +197,6 @@ const CHORD_VOICINGS = {
         { name: 'G', frets: [3, 5, 5, 4, 3, 3], fingers: [1, 3, 4, 2, 1, 1], baseFret: 2, barre: { fret: 3, from: 6, to: 1 }, label: 'E-shape Barre (3rd fret)' },
     ],
     'Ab': [
-        { name: 'Ab', frets: [4, 3, 1, 1, 1, 4], fingers: [3, 2, 1, 1, 1, 4], barre: { fret: 1, from: 4, to: 2 }, label: 'C-shape (4th fret)' },
         { name: 'Ab', frets: [4, 6, 6, 5, 4, 4], fingers: [1, 3, 4, 2, 1, 1], baseFret: 3, barre: { fret: 4, from: 6, to: 1 }, label: 'E-shape Barre (4th fret)' },
         { name: 'Ab', frets: [-1, 11, 13, 13, 13, 11], fingers: [0, 1, 2, 3, 4, 1], baseFret: 1, barre: { fret: 11, from: 5, to: 1 }, label: 'A-shape Barre (11th fret)' },
     ],
