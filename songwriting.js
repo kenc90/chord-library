@@ -940,9 +940,22 @@ document.getElementById('song-title').addEventListener('input', event => {
 });
 document.getElementById('song-key-btn').addEventListener('click', openSongKeyModal);
 document.getElementById('close-song-key').addEventListener('click', closeSongKeyModal);
-document.getElementById('song-key-modal').addEventListener('click', event => {
-    if (event.target.id === 'song-key-modal') closeSongKeyModal();
-});
+// A backdrop should only dismiss its modal when the press and the release both
+// land on the backdrop itself. Otherwise a drag that starts inside the content box
+// (text selection, sliders, chips) and ends over the backdrop fires a click whose
+// target is the backdrop, accidentally closing the modal.
+function wireBackdropClose(modalId, onClose) {
+    const modal = document.getElementById(modalId);
+    let pressedOnBackdrop = false;
+    modal.addEventListener('mousedown', event => {
+        pressedOnBackdrop = event.target === modal;
+    });
+    modal.addEventListener('click', event => {
+        if (event.target === modal && pressedOnBackdrop) onClose();
+        pressedOnBackdrop = false;
+    });
+}
+wireBackdropClose('song-key-modal', closeSongKeyModal);
 document.getElementById('clear-song-keys').addEventListener('click', () => {
     pendingKeys = [];
     renderSongKeyOptions();
@@ -1040,13 +1053,9 @@ document.getElementById('remove-chord-btn').addEventListener('click', () => {
     closeChordFinder();
     removeChord(annotation);
 });
-document.getElementById('chord-finder-modal').addEventListener('click', event => {
-    if (event.target.id === 'chord-finder-modal') closeChordFinder();
-});
+wireBackdropClose('chord-finder-modal', closeChordFinder);
 document.getElementById('close-shape-picker').addEventListener('click', closeShapePicker);
-document.getElementById('shape-picker-modal').addEventListener('click', event => {
-    if (event.target.id === 'shape-picker-modal') closeShapePicker();
-});
+wireBackdropClose('shape-picker-modal', closeShapePicker);
 document.getElementById('shape-picker-modal').addEventListener('keydown', event => {
     if (event.key !== 'Tab') return;
     const controls = [...event.currentTarget.querySelectorAll('button')];
@@ -1077,9 +1086,7 @@ document.getElementById('confirm-ok').addEventListener('click', () => {
 });
 document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
 document.getElementById('close-confirm').addEventListener('click', closeConfirmModal);
-document.getElementById('confirm-modal').addEventListener('click', event => {
-    if (event.target.id === 'confirm-modal') closeConfirmModal();
-});
+wireBackdropClose('confirm-modal', closeConfirmModal);
 document.addEventListener('languagechange', () => {
     renderSong();
     renderChordFinderMode();
