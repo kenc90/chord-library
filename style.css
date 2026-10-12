@@ -199,12 +199,14 @@ body.chord-zoom .zoom-button .icon-zoom-out {
     }
 }
 
-header {
+/* Page banner only — scoped with `body >` so it does not leak onto
+   <header> elements used inside cards (e.g. .prog-card-head). */
+body > header {
     text-align: center;
     padding: 2rem 1rem 1rem;
 }
 
-header h1 {
+body > header h1 {
     font-size: 2.5rem;
     background: linear-gradient(90deg, var(--danger), var(--accent));
     -webkit-background-clip: text;
@@ -769,11 +771,11 @@ footer {
        the title is wide enough to reach under them. Their band ends at 54px from the top
        (1rem offset + 2.4rem button), so push the heading below it instead of letting the
        two share a row. */
-    header {
+    body > header {
         padding-top: 4rem;
     }
 
-    header h1 {
+    body > header h1 {
         font-size: 1.8rem;
     }
 
