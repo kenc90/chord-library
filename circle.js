@@ -514,16 +514,15 @@ function getChordPitchClasses(chord) {
     return pitches;
 }
 
-// Render every library chord whose notes ALL belong to the current scale.
-// Chords are reused straight from the shared CHORDS data (app.js) and grouped
-// by their library category, each shown with its diagram.
+// Render every library chord whose notes ALL belong to the current scale, as a
+// single flat grid. Chords are reused straight from the shared CHORDS data
+// (app.js); the plain triads shown in the Diatonic Chords card are skipped.
 function renderInKeyChords() {
     const container = document.getElementById('in-key-chords');
     if (!container) return;
 
     const scaleNotes = getScaleNotes(currentKey, currentMode);
     const scaleSet = new Set(scaleNotes);
-    const categoryKeys = Object.keys(CHORDS);
 
     // The seven triads already shown in the Diatonic Chords card are named the
     // same way there, so skip them here to avoid showing them twice.
@@ -532,27 +531,19 @@ function renderInKeyChords() {
         NOTES[note] + diatonicSuffixMap[MODE_CHORD_TYPES[currentMode][i]]
     ));
 
-    const sections = categoryKeys.map(category => {
-        const matches = CHORDS[category].filter(chord =>
-            !diatonicNames.has(chord.name) &&
-            [...getChordPitchClasses(chord)].every(pc => scaleSet.has(pc))
-        );
-        if (matches.length === 0) return '';
-        const cards = matches.map(chord => `
-            <div class="inkey-chord" data-chord="${chord.name}" title="${t('chordShape')}">
-                <div class="inkey-chord-name">${chord.name}</div>
-                <div class="inkey-chord-diagram">${renderChordShape(chord, chord.name)}</div>
-            </div>
-        `).join('');
-        return `
-            <div class="inkey-category">
-                <h4 class="inkey-category-title">${t(category)}</h4>
-                <div class="inkey-category-grid">${cards}</div>
-            </div>
-        `;
-    }).join('');
+    const matches = Object.values(CHORDS).flat().filter(chord =>
+        !diatonicNames.has(chord.name) &&
+        [...getChordPitchClasses(chord)].every(pc => scaleSet.has(pc))
+    );
 
-    container.innerHTML = sections || `<p class="inkey-empty">${t('noInKeyChords')}</p>`;
+    const cards = matches.map(chord => `
+        <div class="inkey-chord" data-chord="${chord.name}" title="${t('chordShape')}">
+            <div class="inkey-chord-name">${chord.name}</div>
+            <div class="inkey-chord-diagram">${renderChordShape(chord, chord.name)}</div>
+        </div>
+    `).join('');
+
+    container.innerHTML = cards || `<p class="inkey-empty">${t('noInKeyChords')}</p>`;
 
     container.querySelectorAll('.inkey-chord').forEach(card => {
         card.addEventListener('click', () => showChordModal(card.dataset.chord));

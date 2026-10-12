@@ -392,28 +392,7 @@
 }
 
 /* In-Key Chords (library chords built only from the current scale's notes) */
-.inkey-hint {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin: -0.5rem 0 1.2rem;
-    line-height: 1.5;
-}
-
 .inkey-categories {
-    display: flex;
-    flex-direction: column;
-    gap: 1.4rem;
-}
-
-.inkey-category-title {
-    color: var(--info);
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 0.7rem;
-    letter-spacing: 0.02em;
-}
-
-.inkey-category-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
     gap: 0.7rem;
