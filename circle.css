@@ -218,6 +218,7 @@
     grid-template-areas:
         "scale relationships"
         "diatonic diatonic"
+        "inkey inkey"
         "description description";
     gap: 1.5rem;
 }
@@ -243,6 +244,10 @@
 
 .description-section {
     grid-area: description;
+}
+
+.inkey-section {
+    grid-area: inkey;
 }
 
 .info-section h3 {
@@ -386,6 +391,73 @@
     margin-top: 0.7rem;
 }
 
+/* In-Key Chords (library chords built only from the current scale's notes) */
+.inkey-hint {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: -0.5rem 0 1.2rem;
+    line-height: 1.5;
+}
+
+.inkey-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+}
+
+.inkey-category-title {
+    color: var(--info);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.02em;
+}
+
+.inkey-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 0.7rem;
+}
+
+.inkey-chord {
+    background: rgba(var(--ink-rgb), 0.05);
+    border: 1px solid rgba(var(--ink-rgb), 0.12);
+    border-radius: 12px;
+    padding: 0.6rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.inkey-chord:hover {
+    border-color: rgba(245, 166, 35, 0.5);
+    background: rgba(245, 166, 35, 0.1);
+    transform: translateY(-2px);
+}
+
+.inkey-chord-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--danger);
+    margin-bottom: 0.3rem;
+}
+
+.inkey-chord-diagram {
+    max-width: 90px;
+    margin: 0 auto;
+}
+
+.inkey-chord-diagram .chord-diagram {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.inkey-empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
 /* Relationships */
 .relationships {
     color: var(--text-muted);
@@ -416,6 +488,7 @@
             "scale"
             "relationships"
             "diatonic"
+            "inkey"
             "description";
     }
 

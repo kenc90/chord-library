@@ -503,6 +503,62 @@ function renderDiatonicChords() {
     }).join('');
 }
 
+// Compute the set of pitch classes a chord shape sounds, from its frets.
+// Standard tuning low→high is E-A-D-G-B-E; -1 means the string is muted.
+const OPEN_STRING_PITCHES = [4, 9, 2, 7, 11, 4];
+function getChordPitchClasses(chord) {
+    const pitches = new Set();
+    chord.frets.forEach((fret, i) => {
+        if (fret >= 0) pitches.add((OPEN_STRING_PITCHES[i] + fret) % 12);
+    });
+    return pitches;
+}
+
+// Render every library chord whose notes ALL belong to the current scale.
+// Chords are reused straight from the shared CHORDS data (app.js) and grouped
+// by their library category, each shown with its diagram.
+function renderInKeyChords() {
+    const container = document.getElementById('in-key-chords');
+    if (!container) return;
+
+    const scaleNotes = getScaleNotes(currentKey, currentMode);
+    const scaleSet = new Set(scaleNotes);
+    const categoryKeys = Object.keys(CHORDS);
+
+    // The seven triads already shown in the Diatonic Chords card are named the
+    // same way there, so skip them here to avoid showing them twice.
+    const diatonicSuffixMap = { maj: '', min: 'm', dim: 'dim' };
+    const diatonicNames = new Set(scaleNotes.map((note, i) =>
+        NOTES[note] + diatonicSuffixMap[MODE_CHORD_TYPES[currentMode][i]]
+    ));
+
+    const sections = categoryKeys.map(category => {
+        const matches = CHORDS[category].filter(chord =>
+            !diatonicNames.has(chord.name) &&
+            [...getChordPitchClasses(chord)].every(pc => scaleSet.has(pc))
+        );
+        if (matches.length === 0) return '';
+        const cards = matches.map(chord => `
+            <div class="inkey-chord" data-chord="${chord.name}" title="${t('chordShape')}">
+                <div class="inkey-chord-name">${chord.name}</div>
+                <div class="inkey-chord-diagram">${renderChordShape(chord, chord.name)}</div>
+            </div>
+        `).join('');
+        return `
+            <div class="inkey-category">
+                <h4 class="inkey-category-title">${t(category)}</h4>
+                <div class="inkey-category-grid">${cards}</div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = sections || `<p class="inkey-empty">${t('noInKeyChords')}</p>`;
+
+    container.querySelectorAll('.inkey-chord').forEach(card => {
+        card.addEventListener('click', () => showChordModal(card.dataset.chord));
+    });
+}
+
 // Show chord modal
 function showChordModal(chordName) {
     const modal = document.getElementById('chord-modal');
@@ -666,6 +722,7 @@ function updateAll() {
     renderCircle();
     renderScaleNotes();
     renderDiatonicChords();
+    renderInKeyChords();
     renderRelationships();
     renderFretboard();
     saveCircleState();
