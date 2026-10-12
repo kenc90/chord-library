@@ -43,7 +43,14 @@ const PROGRESSIONS = [
             'zh-Hant': '現代音樂最常見的四和弦循環。明亮、高亢且極易跟唱；因為不會解決，可以無限循環。',
             'zh-Hans': '现代音乐中最常见的四和弦循环。明亮、高亢且极易跟唱；因为不会解决，可以无限循环。',
         },
-        examples: ['Let It Be — The Beatles', 'No Woman No Cry — Bob Marley', 'With or Without You — U2'],
+        examples: [
+            { song: 'Let It Be — The Beatles', key: 'C', mode: 'major' },
+            { song: 'No Woman, No Cry — Bob Marley', key: 'C#', mode: 'major' },
+            { song: 'With or Without You — U2', key: 'D', mode: 'major' },
+            { song: 'Any Way You Want It — Journey', key: 'G', mode: 'major' },
+            { song: 'Someone Like You — Adele', key: 'A', mode: 'major' },
+            { song: "I'm Yours — Jason Mraz", key: 'B', mode: 'major' },
+        ],
     },
     {
         id: 'emotional-pop',
@@ -55,7 +62,13 @@ const PROGRESSIONS = [
             'zh-Hant': '與流行聖歌相同的和弦，但從小調 vi 開始，带出一種惆悵而苦甜的向上張力，最終落在大調 I。抒情曲常用。',
             'zh-Hans': '与流行圣歌相同的和弦，但从小调 vi 开始，带来一种惆怅而苦甜的向上张力，最终落在大调 I。抒情曲常用。',
         },
-        examples: ['The Unforgiven — Metallica', 'Hemorrhage (In His Arms) — Bon Jovi', 'Everybody Hurts — R.E.M.'],
+        examples: [
+            { song: 'Save Tonight — Eagle-Eye Cherry', key: 'C', mode: 'major' },
+            { song: 'Complicated — Avril Lavigne', key: 'F', mode: 'major' },
+            { song: 'The Unforgiven — Metallica', key: 'G', mode: 'major' },
+            { song: 'Africa — Toto', key: 'A', mode: 'major' },
+            { song: 'Boulevard of Broken Dreams — Green Day', key: 'A', mode: 'major' },
+        ],
     },
     {
         id: 'doowop-50s',
@@ -67,7 +80,12 @@ const PROGRESSIONS = [
             'zh-Hant': '一代情歌背後的經典「I–vi–IV–V」和弦。溫暖、浪漫且令人倍感熟悉。',
             'zh-Hans': '一代情歌背后的经典「I–vi–IV–V」和弦。温暖、浪漫且令人倍感熟悉。',
         },
-        examples: ['Stand by Me — Ben E. King', 'Unchained Melody — Righteous Brothers', 'Earth Angel — Penguins'],
+        examples: [
+            { song: 'Unchained Melody — Righteous Brothers', key: 'C', mode: 'major' },
+            { song: 'Stand by Me — Ben E. King', key: 'A', mode: 'major' },
+            { song: 'Earth Angel — Penguins', key: 'Ab', mode: 'major' },
+            { song: 'Perfect — Ed Sheeran', key: 'Ab', mode: 'major' },
+        ],
     },
     {
         id: 'twelve-bar',
@@ -79,7 +97,14 @@ const PROGRESSIONS = [
             'zh-Hant': '藍調、早期搖滾與無數即興曲目的三和弦骨架。通常以十二小節形式展開：I I I I / IV IV I I / V IV I V。',
             'zh-Hans': '蓝调、早期摇滚与无数即兴曲目的三和弦骨架。通常以十二小节形式展开：I I I I / IV IV I I / V IV I V。',
         },
-        examples: ['La Bamba — Ritchie Valens', 'Hound Dog — Elvis Presley', 'Johnny B. Goode — Chuck Berry'],
+        examples: [
+            { song: 'La Bamba — Ritchie Valens', key: 'C', mode: 'major' },
+            { song: 'Twist and Shout — The Beatles', key: 'D', mode: 'major' },
+            { song: 'Sweet Home Chicago — Robert Johnson', key: 'E', mode: 'major' },
+            { song: 'Rock Around the Clock — Bill Haley & His Comets', key: 'A', mode: 'major' },
+            { song: 'Johnny B. Goode — Chuck Berry', key: 'Bb', mode: 'major' },
+            { song: 'Pride and Joy — Stevie Ray Vaughan', key: 'Eb', mode: 'major' },
+        ],
     },
     {
         id: 'jazz-251',
@@ -92,7 +117,7 @@ const PROGRESSIONS = [
             'zh-Hant': '爵士的核心循環。根音以四度下行，每個七和弦都平滑地牽引到下一個，最終解決回 I。是咆勃爵士與標準曲目的基石。',
             'zh-Hans': '爵士的核心循环。根音以四度下行，每个七和弦都平滑地牵引到下一个，最终解决回 I。是比波普与标准曲目的基石。',
         },
-        examples: ['Autumn Leaves', 'Fly Me to the Moon', 'All the Things You Are'],
+        examples: [],
     },
     {
         id: 'jazz-turnaround',
@@ -105,7 +130,13 @@ const PROGRESSIONS = [
             'zh-Hant': '一连串下行五度的循環——小調 vi 只是接在經典 ii–V–I 之前。盖希文《I Got Rhythm》與無數摇摆乐曲的推進式終止。',
             'zh-Hans': '一连串下行五度的循环——小调 vi 只是接在经典 ii–V–I 之前。格什温《I Got Rhythm》与无数摇摆乐曲的推进式终止。',
         },
-        examples: ['I Got Rhythm — George Gershwin', 'Oleo — Sonny Rollins', 'Cotton Tail — Duke Ellington'],
+        examples: [
+            { song: 'I Got Rhythm — George Gershwin', key: 'Bb', mode: 'major' },
+            { song: 'Oleo — Sonny Rollins', key: 'Bb', mode: 'major' },
+            { song: 'Cotton Tail — Duke Ellington', key: 'Bb', mode: 'major' },
+            { song: "Billie's Bounce — Charlie Parker", key: 'Bb', mode: 'major' },
+            { song: 'Anthropology — Charlie Parker', key: 'Bb', mode: 'major' },
+        ],
     },
     {
         id: 'royal-road',
@@ -117,7 +148,10 @@ const PROGRESSIONS = [
             'zh-Hant': '日本人鍾愛的「王道」進行。從 IV 開始落在 vi，聽起來充满电影感、渴望而精緻——動畫主題曲與城市流行的招牌色彩。',
             'zh-Hans': '日本人钟爱的「王道」进行。从 IV 开始落在 vi，听起来充满电影感、渴望而精致——动画主题曲与城市流行的招牌色彩。',
         },
-        examples: ['Plastic Love — Mariya Takeuchi', 'Koi — Miyazaki Ayaka', 'Lemon — Kenshi Yonezu'],
+        examples: [
+            { song: "Didn't We Almost Have It All — Whitney Houston", key: 'Bb', mode: 'major' },
+            { song: 'Fortnight — Taylor Swift feat. Post Malone', key: 'B', mode: 'major' },
+        ],
     },
     {
         id: 'canon',
@@ -129,7 +163,13 @@ const PROGRESSIONS = [
             'zh-Hant': '帕赫貝爾《D 大調卡農》以八拍展開的下行固定低音。莊重而抒情，支撐著無數流行抒情曲與婚禮編曲。',
             'zh-Hans': '帕赫贝尔《D 大调卡农》以八拍展开的下行固定低音。庄重而抒情，支撑着无数流行抒情曲与婚礼编曲。',
         },
-        examples: ['Canon in D — Pachelbel', 'Boulevard of Broken Dreams — Green Day', 'Basket Case — Green Day'],
+        examples: [
+            { song: 'Canon in D — Pachelbel', key: 'D', mode: 'major' },
+            { song: 'Basket Case — Green Day', key: 'Eb', mode: 'major' },
+            { song: 'Go West — Pet Shop Boys', key: 'F', mode: 'major' },
+            { song: 'Hook — Blues Traveler', key: 'A', mode: 'major' },
+            { song: 'Memories — Maroon 5', key: 'B', mode: 'major' },
+        ],
     },
 ];
 
@@ -241,7 +281,11 @@ function renderProgressions() {
             `;
         }).join('');
 
-        const songLinks = prog.examples.map(song => {
+        // Only list example songs whose original key AND tonality match the
+        // current selection, so the shown chords really are those songs' chords.
+        const matchedSongs = prog.examples.filter(ex =>
+            NOTES.indexOf(ex.key) === currentProgKey && ex.mode === currentProgMode);
+        const songLinks = matchedSongs.map(({ song }) => {
             const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(song)}`;
             return `<a href="${url}" target="_blank" rel="noopener" class="song-link">${song}</a>`;
         }).join(', ');
@@ -257,7 +301,7 @@ function renderProgressions() {
                 <p class="prog-card-desc">${localized(prog.desc)}</p>
                 <div class="prog-chips">${chips}</div>
                 <div class="prog-diagrams">${diagrams}</div>
-                <p class="prog-examples"><strong>${t('progExamples')}:</strong> ${songLinks}</p>
+                ${songLinks ? `<p class="prog-examples"><strong>${t('progExamples')}:</strong> ${songLinks}</p>` : ''}
             </article>
         `;
     }).join('');
@@ -267,15 +311,31 @@ function renderProgressions() {
     });
 }
 
-// Show a single chord in the modal (large diagram + fret/finger info).
+// Show every library shape (voicing) for a chord in the modal.
 function showProgChordModal(chordName) {
     const modal = document.getElementById('chord-modal');
     const titleEl = document.getElementById('chord-modal-title');
     const bodyEl = document.getElementById('chord-modal-body');
 
+    const voicings = (typeof CHORD_VOICINGS !== 'undefined' && CHORD_VOICINGS[chordName])
+        ? CHORD_VOICINGS[chordName] : null;
+
+    // Multiple shapes available: render each voicing as its own card.
+    if (voicings && voicings.length > 1) {
+        titleEl.textContent = `${chordName} · ${t('allShapes')}`;
+        bodyEl.innerHTML = voicings.map(v => `
+            <div class="voicing-card">
+                <div class="voicing-label">${v.label}</div>
+                ${renderChordDiagram(v)}
+            </div>
+        `).join('');
+        modal.classList.add('active');
+        return;
+    }
+
+    // Single shape (or no voicing list): show the one diagram with fret/finger info.
     const chord = CHORD_SHAPES[chordName];
     if (!chord) return;
-
     titleEl.textContent = chordName;
     bodyEl.innerHTML = `
         <div class="chord-shape-display">
